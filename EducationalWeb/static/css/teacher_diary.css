@@ -1,0 +1,27 @@
+.button_add_task {
+    background: #E2D3B4;
+    border: #DBCFA9;
+    height: 30px;
+    width: 140px;
+    border-radius: 3px;
+}
+
+.button_add_task:hover {
+    background-color: #B7A295;
+    color: white;
+}
+
+.homeworkInputArea {
+    width: 400px;
+    height: 170px;
+    border-radius: 9px;
+    border: 2px solid #000000;
+    font-size: 17px;
+    padding: 17px;
+}
+
+.homeworkInputArea:focus {
+    outline: 0;
+    box-shadow: 0 0 0 0.4rem #DBCFA9;
+    font-size: 17px;
+}

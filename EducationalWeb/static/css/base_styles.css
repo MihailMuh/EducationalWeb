@@ -1,0 +1,31 @@
+.button {
+    background: #F9F2DC;
+    border: #DBCFA9;
+    height: 30px;
+    width: 140px;
+    border-radius: 3px;
+}
+
+.button:hover {
+    background-color: #B7A295;
+    color: white;
+}
+
+.table {
+    width: 100%;
+    border-spacing: 0;
+    border-collapse: separate;
+}
+
+.vertical span {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+}
+
+td {
+    padding: 4px;
+}
+
+i {
+    font-size: 15pt;
+}

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru-RU">
+{% load static %}
+
+<head>
+    <meta charset="UTF-8">
+    <title>Дневник</title>
+    <link rel="shortcut icon" type="image/png" href="{% static 'img/favicon.ico' %}">
+    <link rel="stylesheet" href="{% static '/css/base_styles.css' %}" type="text/css">
+    <link rel="stylesheet" href="{% static '/css/select_inputs.css' %}" type="text/css">
+</head>
+
+<body>
+<div style="position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000" id="base">
+    <table id="table" class="table">
+        <tr>
+            <th bgcolor="#F9F2DC" height="60" colspan="3">
+                <img src="{% static '/img/emblem.png' %}" align="right" alt="">
+
+                <p align="left">
+                    <img src="{% static '/img/for_main.png' %}" align="center" alt="">
+                    <i>Учебная паутина</i>
+                </p>
+            </th>
+        </tr>
+    </table>
+</div>
+</body>
+
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script type="module" src="{% static '/js/main_diary.js' %}" charset="utf-8"></script>
+</html>

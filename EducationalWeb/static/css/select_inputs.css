@@ -1,0 +1,18 @@
+select {
+    width: 90px;
+    height: 20px;
+    border: 1px solid #999;
+    font-size: 15px;
+    color: #000000;
+    background-color: white;
+    border-radius: 5px;
+}
+
+input {
+    height: 20px;
+    border: 1px solid #999;
+    font-size: 15px;
+    color: #000000;
+    background-color: white;
+    border-radius: 5px;
+}

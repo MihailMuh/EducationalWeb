@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+{% load static %}
+
+<head>
+    <meta charset="UTF-8">
+    <title>Вход</title>
+    <link rel="shortcut icon" type="image/png" href="{% static 'img/favicon.ico' %}">
+    <link rel="stylesheet" href="{% static 'css/sign.css' %}" type="text/css">
+    <link rel="stylesheet" href="{% static 'css/select_inputs.css' %}" type="text/css">
+</head>
+
+<body>
+<table align="center" cellpadding="19">
+    <tr>
+        <th width="100%" bgcolor="#F9F2DC" height="2" colspan="3"></th>
+    </tr>
+    <tr>
+        <td bgcolor="#F9F2DC" width="30%" height="550">
+            <img src="{% static '/img/for_sign_0.png' %}" align="bottom" alt="">
+        </td>
+        <td bgcolor="#DBCFA9" align="center">
+            <img src="{% static '/img/for_sign_1.png' %}" alt="">
+            <img src="{% static '/img/for_main.png' %}" alt="">
+            <h2 align="top"><i>Учебная паутина</i></h2>
+
+            <p align="left"><i>Регион</i></p>
+            <label>
+                <select style="width: 500px">
+                    <option>Челябинская область</option>
+                    <option>Калининградская область</option>
+                    <option>Омская область</option>
+                </select>
+            </label>
+            <br><br>
+
+            <p align="left"><i>Город</i></p>
+            <label>
+                <select style="width: 500px">
+                    <option>г. Миасс</option>
+                    <option>г. Озёрск</option>
+                    <option>г. Снежинск</option>
+                </select>
+            </label>
+            <br><br>
+
+            <p align="left"><i>Образовательная организация</i></p>
+            <label for="schools">
+                <select id="schools" style="width: 500px">
+                    <option>МАОУ "Лицей №6"</option>
+                    <option>Школа №9</option>
+                    <option>Гимназия №8</option>
+                </select>
+            </label>
+            <br><br>
+
+            <i>Логин</i>
+            <label for="surname">
+                <input type='text' id="surname" autofocus>
+            </label>
+            <br><br>
+
+            <i>Пароль</i>
+            <label for="password">
+                <input type='password' id="password">
+            </label>
+            <br><br>
+
+            <button id="enter_button">
+                <i>Войти</i>
+            </button>
+        </td>
+
+        <td bgcolor="#F9F2DC" width="30%">
+            <img src="{% static '/img/for_sign_2.png' %}" align="right" alt="">
+        </td>
+    </tr>
+</table>
+</body>
+
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script type="module" src="{% static '/js/sign.js' %}" charset="utf-8"></script>
+</html>

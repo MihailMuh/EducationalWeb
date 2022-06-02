@@ -1,0 +1,12 @@
+.container {
+    height: 25px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    font-size: 15pt;
+}
+
+.row {
+    height: 30px;
+    background-color: #ffffff;
+}
