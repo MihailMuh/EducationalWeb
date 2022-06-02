@@ -1,0 +1,42 @@
+<tr>
+    <th bgcolor="#DBCFA9" height="40" colspan="4" align="right">
+        <button class="button" id="back">
+            <i>На главную</i>
+        </button>
+</tr>
+<tr>
+    <th align="center" colspan="4" height="50">
+        <i>Табель успеваемости с</i>
+        <label>
+            <input type='date' id="start">
+        </label>
+        <i>до</i>
+        <label>
+            <input type='date' id="end">
+        </label>
+    </th>
+</tr>
+<tr>
+    <td>
+        <img align="left" src="{{ url_for('static', path='/img/for_diary.png') }}" alt="">
+    </td>
+    <td>
+        <table align="center" bgcolor="#e1c9b7" border="1" width="100%" id="markTable">
+        </table>
+    </td>
+    <th>
+        <img align="right" src="{{ url_for('static', path='/img/for_diary 2.png') }}" alt="">
+    </th>
+</tr>
+
+<tr>
+    <th bgcolor="#ffffff" colspan="3" height="10" width="100%"></th>
+</tr>
+
+<tr align="bottom">
+    <th bgcolor="#F9F2DC" colspan="3" height="30" width="100%"></th>
+</tr>
+
+<tr align="bottom">
+    <th bgcolor="#DBCFA9" colspan="3" height="30" width="100%"></th>
+</tr>

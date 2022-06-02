@@ -1,0 +1,97 @@
+<link rel="stylesheet" href="{{ url_for('static', path='/css/containers.css') }}" type="text/css">
+
+<tr>
+    <th bgcolor="#DBCFA9" height="40" colspan="4" align="right">
+        <button class="button" id="back">
+            <i>На главную</i>
+        </button>
+</tr>
+<tr>
+    <th align="center" colspan="4" height="50" id="studentSchedule">
+        <i>Выберите неделю </i>
+        <label>
+            <input type='week'>
+        </label>
+    </th>
+</tr>
+<tr>
+    <th rowspan="4" bgcolor="#ffffff">
+        <img src="{{ url_for('static', path='/img/for_diary.png') }}" alt="">
+    </th>
+    <td>
+        <table align="right" border="1" bgcolor="#e1c9b7"> <! Понедельник-- -->
+            <tr id="0">
+                <th rowspan="8" bgcolor="#F9F2DC" width="20" class=vertical>
+                    <span><i>Понедельник</i></span>
+                </th>
+            </tr>
+        </table>
+    </td>
+
+    <td>
+        <table align="left" border="1" bgcolor="#e1c9b7"> <! Четверг-- -->
+            <tr id="3">
+                <th rowspan="8" bgcolor="#F9F2DC" width="20" class=vertical>
+                    <span><i>Четверг</i></span>
+                </th>
+            </tr>
+        </table>
+    </td>
+
+    <th rowspan="3" bgcolor="#ffffff">
+        <img src="{{ url_for('static', path='/img/for_diary 2.png') }}" alt="">
+    </th>
+</tr>
+
+<tr>
+    <td>
+        <table align="right" border="1" bgcolor="#e1c9b7"> <! Вторник-- -->
+            <tr id="1">
+                <th rowspan="8" bgcolor="#F9F2DC" width="20" class=vertical>
+                    <span><i>Вторник</i></span>
+                </th>
+            </tr>
+        </table>
+    </td>
+
+    <td>
+        <table align="left" border="1" bgcolor="#e1c9b7"> <! Пятница-- -->
+            <tr id="4">
+                <th rowspan="8" bgcolor="#F9F2DC" width="20" class=vertical>
+                    <span><i>Пятница</i></span>
+                </th>
+            </tr>
+        </table>
+    </td>
+</tr>
+
+<tr>
+    <td>
+        <table align="right" border="1" bgcolor="#e1c9b7"> <! Среда-- -->
+            <tr id="2">
+                <th rowspan="8" bgcolor="#F9F2DC" width="20" class=vertical>
+                    <span><i>Среда</i></span>
+                </th>
+            </tr>
+        </table>
+    </td>
+
+    <td>
+        <table align="left" border="1" bgcolor="#e1c9b7"> <! Суббота-- -->
+            <tr id="5">
+                <th rowspan="8" bgcolor="#F9F2DC" width="20" class=vertical>
+                    <span><i>Суббота</i></span>
+                </th>
+            </tr>
+        </table>
+    </td>
+</tr>
+<tr>
+    <th height="20" colspan="4"></th>
+</tr>
+<tr>
+    <th bgcolor="#F9F2DC" height="30" colspan="4">
+</tr>
+<tr>
+    <th bgcolor="#DBCFA9" height="30" colspan="4">
+</tr>
