@@ -23,7 +23,7 @@ function startWebSocket() {
             "nickname": nickname,
             "school": school,
             "character": character,
-            "clazz": clazz,
+            "class": clazz,
             "grouping": grouping,
             "fixed_classes": fixedClasses
         })
@@ -34,12 +34,11 @@ function startWebSocket() {
     }
     sessionSocket.onerror = (event) => {
         console.log(event)
-        sessionSocket.onclose()
     }
 }
 
 export function disconnect() {
-    return sessionSocket.readyState === WebSocket.CLOSING || sessionSocket.readyState === WebSocket.CLOSED || sessionSocket.readyState === WebSocket.CONNECTING
+    return sessionSocket.readyState !== WebSocket.OPEN
 }
 
 export function post(json) {
@@ -50,6 +49,24 @@ export function post(json) {
     }
 
     sessionSocket.send(JSON.stringify(json))
+}
+
+export function onMessage(func) {
+    async function removeAfterComplete(event) {
+        func(JSON.parse(await event.data.text()))
+        sessionSocket.removeEventListener('message', removeAfterComplete)
+    }
+
+    sessionSocket.addEventListener('message', removeAfterComplete)
+}
+
+export function onError(func) {
+    function removeAfterComplete(event) {
+        func(event)
+        sessionSocket.removeEventListener('error', removeAfterComplete)
+    }
+
+    sessionSocket.addEventListener('error', removeAfterComplete)
 }
 
 export let sessionSocket

@@ -1,0 +1,112 @@
+{% load static %}
+<link rel="stylesheet" href="{% static '/css/select_inputs.css' %}" type="text/css">
+
+<tr>
+    <th bgcolor="#DBCFA9" height="40" colspan="4" align="right">
+        <button class="button" id="back">
+            <i>На главную</i>
+        </button>
+</tr>
+<tr>
+    <th width="100%" height="30" colspan="4" id="adminScheduling">
+        <p><i>Класс&nbsp;</i>
+            <label for="class">
+                <select id="class">
+                    <option>11А</option>
+                    <option>11Б</option>
+                    <option>10А</option>
+                    <option>10Б</option>
+                    <option>9А</option>
+                    <option>9Б</option>
+                    <option>9В</option>
+                    <option>8А</option>
+                    <option>8Б</option>
+                    <option>8В</option>
+                    <option>7А</option>
+                    <option>7Б</option>
+                    <option>7В</option>
+                    <option>6А</option>
+                    <option>6Б</option>
+                    <option>6В</option>
+                    <option>5А</option>
+                    <option>5Б</option>
+                    <option>5В</option>
+                    <option>5Г</option>
+                </select>
+            </label><i>&nbsp;&nbsp;&nbsp;Выберите неделю&nbsp;</i>
+            <label>
+                <input type='week'>
+            </label>
+    </th>
+</tr>
+<tr>
+    <th rowspan="3" bgcolor="#ffffff">
+        <img src="{% static '/img/for_diary.png' %}" alt="">
+    </th>
+    <td>
+        <table align="center" border="1" bgcolor="#e1c9b7"> <! Понедельник-- -->
+            <tr id="0">
+                <th rowspan="8" bgcolor="#F9F2DC" width="20" class=vertical><span><i>Понедельник</i></span></th>
+            </tr>
+        </table>
+    </td>
+    <td>
+        <table align="center" border="1" bgcolor="#e1c9b7"> <! Четверг-- -->
+            <tr id="3">
+                <th rowspan="8" bgcolor="#F9F2DC" width="20" class=vertical><span><i>Четверг</i></span></th>
+            </tr>
+        </table>
+    </td>
+    <th rowspan="3" bgcolor="#ffffff">
+        <img src="{% static '/img/for_diary 2.png' %}" alt="">
+    </th>
+</tr>
+<tr>
+    <td>
+        <table align="center" border="1" bgcolor="#e1c9b7"> <! Вторник-- -->
+            <tr id="1">
+                <th rowspan="8" bgcolor="#F9F2DC" width="20" class=vertical><span><i>Вторник</i></span></th>
+            </tr>
+        </table>
+    </td>
+    <td>
+        <table align="center" border="1" bgcolor="#e1c9b7"> <! Пятница-- -->
+            <tr id="4">
+                <th rowspan="8" bgcolor="#F9F2DC" width="20" class=vertical><span><i>Пятница</i></span></th>
+            </tr>
+        </table>
+    </td>
+</tr>
+<tr>
+    <td>
+        <table align="center" border="1" bgcolor="#e1c9b7"> <! Среда-- -->
+            <tr id="2">
+                <th rowspan="8" bgcolor="#F9F2DC" width="20" class=vertical><span><i>Среда</i></span></th>
+            </tr>
+        </table>
+    </td>
+    <td>
+        <table align="center" border="1" bgcolor="#e1c9b7"> <! Суббота-- -->
+            <tr id="5">
+                <th rowspan="8" bgcolor="#F9F2DC" width="20" class=vertical><span><i>Суббота</i></span></th>
+            </tr>
+        </table>
+    </td>
+</tr>
+<tr>
+    <th width="100%" height="20" colspan="4"></th>
+</tr>
+<tr>
+    <th width="100%" height="20" colspan="4" align="center">
+        <button class="button" id="change"><i>Сохранить</i></button>
+    </th>
+</tr>
+<tr>
+    <th width="100%" height="20" colspan="4"></th>
+</tr>
+<tr>
+    <th bgcolor="#F9F2DC" width="100%" height="30" colspan="4"></th>
+</tr>
+<tr>
+    <th bgcolor="#DBCFA9" width="100%" height="30" colspan="4">
+</tr>

@@ -1,6 +1,8 @@
 import {setFuncForButton, setResponseForButton} from './base.js'
 import {runSchedule} from "./schedule.js"
 import {mainPage} from "./common.js"
+import {runScheduling} from "./admin_scheduling.js"
+import {runTeacherScheduleScript} from "./teacher_schedule.js"
 
 const mainTable = document.getElementById("table")
 
@@ -49,10 +51,10 @@ function page(html, needHistory) {
         return runSchedule()
     }
 
-    // if (document.getElementById("adminScheduling")) {
-    //     return runScheduling(school)
-    // }
-    //
+    if (document.getElementById("adminScheduling")) {
+        return runScheduling()
+    }
+
     // if (document.getElementById("weight")) {
     //     return runGrading(school, fixed_classes)
     // }
@@ -61,12 +63,12 @@ function page(html, needHistory) {
     //     return runMarks(nickname, clazz, school)
     // }
     //
-    // if (document.getElementById("teacherTable")) {
-    //     return runTeacherSchedule(fixed_classes, school)
-    // }
+    if (document.getElementById("teacherTable")) {
+        return runTeacherScheduleScript()
+    }
 }
 
-window.addEventListener('popstate', function (event) {
+window.addEventListener('popstate', (event) => {
     page(event.state, false)
 })
 

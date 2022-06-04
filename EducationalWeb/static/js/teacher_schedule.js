@@ -1,5 +1,6 @@
-import {niceDate, str} from "./base.js"
+import {niceDate, setFuncForButton, str, success1500} from "./base.js"
 import {setSwal} from './base_schedule.js'
+import {onError, onMessage, post} from "./common.js"
 
 function createLessonContainer(id, clazz, subject, classroom, homework) {
     const lessonContainer = document.createElement("tr")
@@ -38,10 +39,7 @@ function setSwals(i, j, clazz, subject, classroom, homework) {
     setSwal(document.getElementById(str('subject', i, j)), subject, html)
     setSwal(document.getElementById(str('homework', i, j)), subject, html)
 
-    const buttonHomework = document.getElementById(str("button", i, j))
-    if (buttonHomework) {
-        buttonHomework.onclick = () => addHomeworkSwal(homework, clazz, i, j)
-    }
+    setFuncForButton(str("button", i, j), () => addHomeworkSwal(homework, clazz, i, j))
 }
 
 function createSchedule(schedule) {
@@ -66,7 +64,7 @@ function createSchedule(schedule) {
     }
 }
 
-function addHomeworkSwal(homework, clazz, dayId, subject_id) {
+function addHomeworkSwal(homework, clazz, dayId, subjectId) {
     Swal.mixin({
         customClass: {
             confirmButton: 'button',
@@ -77,77 +75,55 @@ function addHomeworkSwal(homework, clazz, dayId, subject_id) {
         html: `<br><textarea class="homeworkInputArea" id="homeworkInputArea">${homework}</textarea>`,
         confirmButtonText: '<i>Сохранить</i>',
         showLoaderOnConfirm: true,
+        backdrop: true,
         preConfirm: () => {
-            return xmlHttpRequest(clazz, document.getElementById("homeworkInputArea").value, dayId, subject_id)
-                .then(function (text) {
-                    getSchedule()
-                    Swal.fire({
-                        title: text,
-                        icon: 'success',
-                        timer: 1500,
-                        showConfirmButton: false,
-                        toast: true,
-                        position: "top"
-                    })
-                }).catch(function (err) {
-                    Swal.showValidationMessage(err)
-                })
+            const newHomework = document.getElementById("homeworkInputArea").value
+            if (homework === newHomework) {
+                return success1500("Сохранено!")
+            }
+            return postHomework(clazz, newHomework, dayId, subjectId)
+                .then(() => {
+                    success1500("Сохранено!")
+                    updateTeacherSchedule()
+                }).catch(message => Swal.showValidationMessage(message))
         },
         allowOutsideClick: () => !Swal.isLoading()
     })
 }
 
-const xmlHttpRequest = function (clazz, homework, dayId, subject_id) {
-    return new Promise(function (resolve, reject) {
-        const req = new XMLHttpRequest()
-        req.open("POST", "post_homework", true)
-        req.onload = function () {
-            if (req.status === 200) {
-                resolve("Сохранено!")
-            } else {
-                console.log(req.response)
-                reject("Ошибка обращения к серверу!")
-            }
-        }
-        req.send(JSON.stringify({
+const postHomework = (clazz, homework, dayId, subjectId) => {
+    return new Promise((resolve, reject) => {
+        onMessage(resolve)
+        onError((event) => {
+            console.log(event)
+            reject("Попробуйте позже!")
+        })
+
+        post({
+            "url": "post_homework",
             "class": clazz,
             "homework": homework,
             "week": weekBox.value,
             "day_id": dayId,
-            "subject_id": subject_id,
-            "school": school
-        }))
+            "subject_id": subjectId
+        })
     })
 }
 
-function getSchedule() {
-    const req = new XMLHttpRequest()
-    req.open("POST", "get_teacher_schedule", true)
-    req.onload = function () {
-        if (req.status === 200) {
-            createSchedule(JSON.parse(req.responseText), school, weekBox.value)
-        } else {
-            console.log(req.response)
-        }
-    }
-    req.send(JSON.stringify({
-        "fixed_classes": fixed_classes,
-        "week": weekBox.value,
-        "school": school
-    }))
-}
-
-let school
-let fixed_classes
 let weekBox
 
-export function runTeacherSchedule(Fixed_classes, School) {
+function updateTeacherSchedule() {
+    onMessage(createSchedule)
+    post({
+        "url": "get_teacher_schedule",
+        "week": weekBox.value
+    })
+}
+
+export function runTeacherScheduleScript() {
     weekBox = document.querySelector('input[type="week"]')
     weekBox.value = niceDate(new Date())
-    weekBox.addEventListener("input", getSchedule)
+    weekBox.addEventListener("input", updateTeacherSchedule)
 
-    school = School
-    fixed_classes = Fixed_classes
-
-    getSchedule()
+    updateTeacherSchedule()
 }

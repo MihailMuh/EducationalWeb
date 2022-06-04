@@ -33,13 +33,17 @@ async def add_teachers():
         for teacher_and_classes in csv.reader(file, delimiter=";"):
             teacher = teacher_and_classes[0].replace("\ufeff", "")
             teacher_classes = []
+            character = "teacher"
 
             for j in teacher_and_classes[1:]:
                 classes = j.split()
                 teacher_classes.append(
                     [i.replace("-", " ") for i in classes] + ["" for _ in range(5 - len(classes))])
 
-            await add_people(teacher, teacher, "1111", 'МАОУ "Лицей №6"', is_student=False,
+            if (teacher == "Учитель14") or (teacher == "Учитель16") or (teacher == "Учитель38"):
+                character = "admin"
+
+            await add_people(teacher, teacher, "1111", 'МАОУ "Лицей №6"', is_student=False, character=character,
                              fixed_classes=teacher_classes)
 
 
@@ -48,10 +52,13 @@ async def add_students():
         for student_and_class in csv.reader(file, delimiter=";"):
             student, clazz, group = tuple(map(lambda x: x.replace("\ufeff", ""), student_and_class))
 
-            await add_people(student, student, "0000", 'МАОУ "Лицей №6"', is_student=True, clazz=clazz, grouping=group)
+            await add_people(student, student, "0000", 'МАОУ "Лицей №6"', is_student=True, clazz=clazz,
+                             grouping=group)
 
-    await add_people("Мухортов", "Мухортов Михаил", "0000", 'МАОУ "Лицей №6"', is_student=True, clazz="11А", grouping=2)
-    await add_people("Фарион", "Фарион Александра", "0000", 'МАОУ "Лицей №6"', is_student=True, clazz="11А", grouping=1)
+    await add_people("Мухортов", "Мухортов Михаил", "0000", 'МАОУ "Лицей №6"', is_student=True, clazz="11А",
+                     grouping=2)
+    await add_people("Фарион", "Фарион Александра", "0000", 'МАОУ "Лицей №6"', is_student=True, clazz="11А",
+                     grouping=1)
     await add_people("1", "1", "1", 'МАОУ "Лицей №6"', is_student=True, clazz="11А", grouping=1)
 
 
@@ -103,7 +110,7 @@ async def add_diary():
 
 
 def delete(db: Type[Model]):
-    do(db.objects.all().adelete)
+    db.objects.all().delete()
 
 
 def delete_all():

@@ -34,6 +34,17 @@ export function arraySum(array) {
     return sum
 }
 
+export function success1500(text) {
+    Swal.fire({
+        title: text,
+        icon: 'success',
+        timer: 1500,
+        showConfirmButton: false,
+        toast: true,
+        position: "top"
+    })
+}
+
 export function setResponseForButton(htmlPage, openPage) {
     setFuncForButton(htmlPage, () => {
         post("html", {"html": htmlPage}, (xhr) => {

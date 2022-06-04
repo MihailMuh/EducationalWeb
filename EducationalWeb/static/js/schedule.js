@@ -1,6 +1,6 @@
 import {niceDate, str} from './base.js'
 import {setSwal} from './base_schedule.js'
-import {grouping, post, sessionSocket} from "./common.js"
+import {grouping, onMessage, post} from "./common.js"
 
 function getSubject(array, mark, id) {
     const subject = array[0]
@@ -100,13 +100,13 @@ export function runSchedule() {
     weekNumber.value = niceDate(new Date())
 
     function schedule() {
-        sessionSocket.onmessage = async (event) => {
-            const json = JSON.parse(await event.data.text())
+        onMessage((json) => {
             const schedule = json["schedule"]
             const marks = json["marks"]
 
             createSchedule(schedule, marks)
-        }
+        })
+
         post({
             "url": "get_student_schedule",
             "week": weekNumber.value

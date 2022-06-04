@@ -114,16 +114,20 @@ LOGGING = {
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'filters': ['require_debug_true'],
             'level': 'INFO',
         },
     },
     'loggers': {
-        'django': {
+        'mihalis': {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': True,
         },
+        'systemd': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': True,
+        }
     },
 }
 

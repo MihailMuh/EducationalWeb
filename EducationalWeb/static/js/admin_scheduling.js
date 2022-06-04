@@ -1,5 +1,5 @@
-import {niceDate, str} from './base.js'
-import {getSchedule} from './base_schedule.js'
+import {niceDate, str, success1500} from './base.js'
+import {onMessage, post} from "./common.js"
 
 function getSubjectContainer(subject, id) {
     const tr = document.createElement('tr')
@@ -22,9 +22,15 @@ function createSchedule(schedule) {
     }
 }
 
-export function runScheduling(school) {
+export function runScheduling() {
     function schedule() {
-        getSchedule(weekNumber.value, classSelect.value, school, createSchedule)
+        onMessage(createSchedule)
+
+        post({
+            "url": "get_schedule",
+            "class": classSelect.value,
+            "week": weekNumber.value
+        })
     }
 
     const inputs = document.getElementsByTagName("input")
@@ -36,8 +42,7 @@ export function runScheduling(school) {
     weekNumber.addEventListener("input", schedule)
     classSelect.addEventListener("input", schedule)
 
-    document.getElementById("change").onclick = function () {
-        const req = new XMLHttpRequest()
+    document.getElementById("change").onclick = () => {
         const schedule = [[], [], [], [], [], []]
         let numSubj = 0
         let day = 0
@@ -52,26 +57,13 @@ export function runScheduling(school) {
             }
         }
 
-        req.open("POST", "post_schedule", true)
-        req.onload = function () {
-            if (req.status === 200) {
-                Swal.fire({
-                    title: "Сохранено!",
-                    icon: 'success',
-                    timer: 1500,
-                    showConfirmButton: false,
-                    toast: true,
-                    position: "top"
-                })
-            } else {
-                console.log(req.response)
-            }
-        }
-        req.send(JSON.stringify({
+        onMessage(() => success1500("Сохранено!"))
+
+        post({
+            "url": "post_schedule",
             "schedule": [schedule[0], schedule[2], schedule[4], schedule[1], schedule[3], schedule[5]],
             "class": classSelect.value,
-            "week": weekNumber.value,
-            "school": school
-        }))
+            "week": weekNumber.value
+        })
     }
 }

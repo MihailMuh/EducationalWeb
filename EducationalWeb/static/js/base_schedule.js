@@ -1,8 +1,6 @@
 import {post} from "./common.js";
 
-export function getSchedule(date, clazz, school, func) {
-    const argument = arguments[arguments.length - 1]
-
+export function getSchedule(date, clazz) {
     post({
         "url": "get_schedule",
         "class": clazz,
