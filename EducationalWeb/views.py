@@ -6,8 +6,8 @@ from django.contrib.auth.hashers import check_password
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
-from EducationalWeb.models import Peoples, Students, Teachers
-from EducationalWeb.shortcuts import aget_object_or_404, aget, get_template
+from EducationalWeb.models import People
+from EducationalWeb.shortcuts import aget_object_or_404, get_template, aget_user_character
 
 logger = logging.getLogger("django")
 
@@ -31,17 +31,19 @@ async def enter(request: AsgiRequest):
     school: str = people_data["school"]
     character: str = "student"
 
-    people: Peoples = await aget_object_or_404(Peoples, nickname=nickname, school=school)
+    people: People = await aget_object_or_404(People, nickname=nickname, school=school)
 
     if not check_password(password, people.password):
         return HttpResponse(status=405)
 
     if people.is_student:
-        student = await aget(Students, nickname=nickname)
-        people_data |= {"class": student.clazz, "grouping": student.grouping}
+        people = await aget_user_character("student", nickname=nickname, school=school)
+        people_data |= {"class": people.student.clazz, "grouping": people.student.grouping}
     else:
-        teacher = await aget(Teachers, nickname=nickname)
-        character = teacher.character
-        people_data["fixed_classes"] = teacher.fixed_classes
+        people = await aget_user_character("teacher", nickname=nickname, school=school)
+        character = people.teacher.character
+        classes: list = people.teacher.fixed_classes
+        # Из-за того, что в бд хранятся списки фиксированной длины, массив с классами учителя в конце имеет несколько таких элементов: ['', '', '', '', ''], их стоит убрать
+        people_data["fixed_classes"] = classes[:classes.index(['', '', '', '', ''])]
 
     return JsonResponse(people_data | {"character": [character, get_template(character + "_main.html")]})

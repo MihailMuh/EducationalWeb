@@ -1,4 +1,5 @@
 import logging
+import datetime
 from functools import lru_cache
 
 import orjson
@@ -50,6 +51,31 @@ def join_schedules(old_schedule: list, new_schedule: list) -> list:
                 old_schedule[i][j] = arr
 
     return old_schedule
+
+
+def contains_subject_by_date(schedule: list, subject: str, weekday: int) -> bool:
+    contains_subject = False
+    for lesson in schedule[weekday]:
+        if subject in lesson[0]:
+            contains_subject = True
+            break
+
+    return contains_subject
+
+
+def incompatible_group(subject: str, day_subjects: tuple, student_group: str) -> bool:
+    for i in day_subjects:
+        if subject == i:
+            return False
+
+        if ("/" in i) and (student_group in i):
+            return False
+    return True
+
+
+@lru_cache(maxsize=1024, typed=True)
+def strdate_to_datetime(date: str):
+    return datetime.date(*list(map(int, date.split("-"))))
 
 
 @lru_cache(maxsize=2048, typed=True)

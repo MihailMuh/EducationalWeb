@@ -1,9 +1,6 @@
-import logging
-
-from .db_queries import get_student_schedule, get_schedule, save_schedule, get_teacher_schedule, post_homework
+from .db_queries import get_student_schedule, get_schedule, save_schedule, \
+    get_teacher_schedule, post_homework, get_students_and_marks
 from .server_utils import get_value_or_none, AsyncOrjsonWebsocketConsumer
-
-logger = logging.getLogger("mihalis")
 
 
 class SessionConsumer(AsyncOrjsonWebsocketConsumer):
@@ -42,3 +39,7 @@ class SessionConsumer(AsyncOrjsonWebsocketConsumer):
             case "post_homework":
                 await self.send_json(await post_homework(content["class"], self.school, content["week"],
                                                          content["day_id"], content["subject_id"], content["homework"]))
+
+            case "get_students_and_marks":
+                await self.send_json(await get_students_and_marks(content["class"], self.school,
+                                                                  content["date"], content["subject"]))

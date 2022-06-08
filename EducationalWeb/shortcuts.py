@@ -5,7 +5,7 @@ from django.db.models import Model, QuerySet
 from django.shortcuts import get_object_or_404
 from django.template import loader
 
-from .models import Diary
+from .models import Diary, People
 
 
 def get_template(name: str) -> str:
@@ -17,11 +17,12 @@ def to_async(func):
 
 
 async def asave(klass: Model):
-    return await to_async(klass.save)()
+    return await to_async(klass.save)(force_update=True)
 
 
-async def afilter(klass: Type[Model], *args, **kwargs) -> QuerySet:
-    return await to_async(klass.objects.filter)(*args, **kwargs)
+async def afilter(klass: Type[Model], *args, **kwargs) -> list:
+    query: QuerySet = klass.objects.filter(*args, **kwargs)
+    return await to_async(list)(query)
 
 
 async def aget(klass: Type[Model], *args, **kwargs):
@@ -35,12 +36,25 @@ async def aget_query(query: QuerySet, *args, **kwargs):
         return None
 
 
-async def aget_or_create(klass: Type[Model], **kwargs) -> tuple[Any, bool]:
-    return await to_async(klass.objects.get_or_create)(**kwargs)
+async def aquery_to_list(query: QuerySet) -> list:
+    return await to_async(list)(query)
+
+
+async def acreate(klass: Type[Model], **kwargs) -> Any:
+    return await to_async(klass.objects.create)(**kwargs)
 
 
 async def aget_schedule_from_db(school: str, clazz: str, week: str) -> Diary:
     return await aget(klass=Diary, school=school, clazz=clazz, week=week)
+
+
+async def aget_user_character(character: str, nickname: str, school: str) -> People:
+    return await to_async(People.objects.select_related(character).get)(nickname=nickname,
+                                                                        school=school)
+
+
+async def afilter_user_character(klass: Type[Model], table: str, **kwargs) -> list:
+    return await to_async(list)(klass.objects.select_related(table).filter(**kwargs))
 
 
 aget_object_or_404 = to_async(get_object_or_404)

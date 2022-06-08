@@ -1,4 +1,5 @@
 import {str} from "./base.js"
+import {fixedClasses, onMessage, post, school} from "./common.js"
 
 function getDate() {
     let yourDate = new Date()
@@ -18,9 +19,7 @@ function swal(title, icon) {
 }
 
 function postData(text, weight, date) {
-    const req = new XMLHttpRequest()
     const marksAndStudents = getMarksAndStudents()
-    const json = {}
 
     if (!marksAndStudents) {
         return swal("Некорректные оценки!", "error")
@@ -31,42 +30,14 @@ function postData(text, weight, date) {
 
     swal("Сохранено!", "success")
 
-    json["marks"] = marksAndStudents
-    json["weight"] = weight
-    json["theme"] = text
-    json["date"] = date
-    json["subject"] = currentSubject
-
-    req.open("POST", "post_marks", true)
-    req.send(JSON.stringify(json))
-}
-
-function getStudents(clazz, school, date, workName, markWeight) {
-    const req = new XMLHttpRequest()
-    req.open("POST", "get_students", true)
-    req.onload = function () {
-        if (req.status === 200) {
-            const json = JSON.parse(req.responseText)
-            studentsNicks = []
-
-            if (json["theme"]) {
-                workName.value = json["theme"]
-                markWeight.value = json["weight"]
-            } else {
-                workName.value = ""
-                markWeight.value = "6"
-            }
-            createStudentsTable(json)
-        } else {
-            console.log(req.response)
-        }
-    }
-    req.send(JSON.stringify({
-        "class": clazz,
-        "school": school,
+    post({
+        "url": "post_marks",
+        "marks": marksAndStudents,
+        "weight": weight,
+        "theme": text,
         "date": date,
         "subject": currentSubject
-    }))
+    })
 }
 
 function createStudentsTable(json) {
@@ -174,10 +145,31 @@ function add_classes(teacher_list) {
     return document.getElementById("class")
 }
 
+function getStudents(clazz, school, date, workName, markWeight) {
+    onMessage((json) => {
+        console.log(json)
+        if (json["theme"]) {
+            workName.value = json["theme"]
+            markWeight.value = json["weight"]
+        } else {
+            workName.value = ""
+            markWeight.value = "6"
+        }
+        createStudentsTable(json)
+    })
+    post({
+        "url": "get_students_and_marks",
+        "class": clazz,
+        "school": school,
+        "date": date,
+        "subject": currentSubject
+    })
+}
+
 let studentsNicks
 let currentSubject
 
-export function runGrading(school, subjects) {
+export function runGrading() {
     function students(clazz) {
         getStudents(clazz, school, dateInput.value, workName, markWeight)
     }
@@ -185,16 +177,15 @@ export function runGrading(school, subjects) {
     function getNewStudentsAndSubjects() {
         const clazz = classInput.value
 
-        for (let i = 0; i < subjects.length; i++) {
-            if (subjects[i][0] === clazz) {
-                setSubjectsInSelect(subjects[i].slice(1, subjects[i].length), () => students(clazz))
-                students(clazz)
-                return
+        for (let i = 0; i < fixedClasses.length; i++) {
+            if (fixedClasses[i][0] === clazz) {
+                setSubjectsInSelect(fixedClasses[i].slice(1, fixedClasses[i].length), () => students(clazz))
+                return students(clazz)
             }
         }
     }
 
-    const classInput = add_classes(subjects)
+    const classInput = add_classes(fixedClasses)
     const dateInput = document.querySelector('input[type="date"]')
     const workName = document.querySelector('input[type="text"]')
     const markWeight = document.getElementById("weight")
