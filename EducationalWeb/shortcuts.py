@@ -17,12 +17,11 @@ def to_async(func):
 
 
 async def asave(klass: Model):
-    return await to_async(klass.save)(force_update=True)
+    return await to_async(klass.save)()
 
 
-async def afilter(klass: Type[Model], *args, **kwargs) -> list:
-    query: QuerySet = klass.objects.filter(*args, **kwargs)
-    return await to_async(list)(query)
+async def afilter(klass: Type[Model], *args, **kwargs) -> tuple:
+    return await to_async(tuple)(klass.objects.filter(*args, **kwargs))
 
 
 async def aget(klass: Type[Model], *args, **kwargs):
@@ -34,10 +33,6 @@ async def aget_query(query: QuerySet, *args, **kwargs):
         return await to_async(query.get)(*args, **kwargs)
     except query.model.DoesNotExist:
         return None
-
-
-async def aquery_to_list(query: QuerySet) -> list:
-    return await to_async(list)(query)
 
 
 async def acreate(klass: Type[Model], **kwargs) -> Any:
@@ -53,8 +48,8 @@ async def aget_user_character(character: str, nickname: str, school: str) -> Peo
                                                                         school=school)
 
 
-async def afilter_user_character(klass: Type[Model], table: str, **kwargs) -> list:
-    return await to_async(list)(klass.objects.select_related(table).filter(**kwargs))
+async def afilter_user_character(klass: Type[Model], table: str, **kwargs) -> tuple:
+    return await to_async(tuple)(klass.objects.select_related(table).filter(**kwargs))
 
 
 aget_object_or_404 = to_async(get_object_or_404)

@@ -34,10 +34,10 @@ export function arraySum(array) {
     return sum
 }
 
-export function success1500(text) {
-    Swal.fire({
+export function toast(text, type='success') {
+        Swal.fire({
         title: text,
-        icon: 'success',
+        icon: type,
         timer: 1500,
         showConfirmButton: false,
         toast: true,

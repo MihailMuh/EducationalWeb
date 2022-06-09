@@ -1,4 +1,4 @@
-import {niceDate, str, success1500} from './base.js'
+import {niceDate, str, toast} from './base.js'
 import {onMessage, post} from "./common.js"
 
 function getSubjectContainer(subject, id) {
@@ -57,7 +57,7 @@ export function runScheduling() {
             }
         }
 
-        onMessage(() => success1500("Сохранено!"))
+        onMessage(() => toast("Сохранено!"))
 
         post({
             "url": "post_schedule",

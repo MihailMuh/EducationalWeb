@@ -73,6 +73,12 @@ def incompatible_group(subject: str, day_subjects: tuple, student_group: str) ->
     return True
 
 
+def get_theme_and_weight_from_marks(marks: tuple) -> tuple:
+    if not marks:
+        return "", 6
+    return marks[0].theme, marks[0].weight
+
+
 @lru_cache(maxsize=1024, typed=True)
 def strdate_to_datetime(date: str):
     return datetime.date(*list(map(int, date.split("-"))))

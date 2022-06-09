@@ -26,7 +26,7 @@ class Diary(Model):
 class Mark(Model):
     nickname = CharField(max_length=100)
     date = CharField(max_length=20)
-    weight = CharField(max_length=2)
+    weight = PositiveSmallIntegerField()
     value = PositiveSmallIntegerField()
     theme = CharField(max_length=5000)
     subject = CharField(max_length=100)
@@ -35,7 +35,6 @@ class Mark(Model):
 class Student(Model):
     clazz = CharField(max_length=3)
     grouping = CharField(max_length=50)
-    mark = ForeignKey(Mark, on_delete=CASCADE, null=True)
 
 
 class Teacher(Model):

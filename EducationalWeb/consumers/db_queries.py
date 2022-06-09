@@ -1,8 +1,8 @@
 from django.db.models import QuerySet
 
 from .server_utils import *
-from ..models import Mark, Diary, ClassData, People, Student
-from ..shortcuts import aget_schedule_from_db, asave, acreate, to_async, aquery_to_list, afilter, afilter_user_character
+from ..models import Mark, Diary, ClassData, People
+from ..shortcuts import aget_schedule_from_db, asave, acreate, afilter, to_async
 
 logger = logging.getLogger("mihalis")
 
@@ -17,9 +17,7 @@ async def get_marks(week: str, nickname: str) -> list:
         date += datetime.timedelta(days=1)
         marks.append([])
 
-    marks_query: QuerySet = await to_async(Mark.objects.filter(nickname=nickname).filter)(date__in=date_list)
-
-    logger.info(await aquery_to_list(marks_query))
+    # marks_query: QuerySet = await to_async(Mark.objects.filter(nickname=nickname).filter)(date__in=date_list)
 
     return marks
 
@@ -53,12 +51,12 @@ async def save_schedule(school: str, clazz: str, week: str, new_schedule: list):
 async def get_teacher_schedule(week: str, fixed_classes: list, school: str) -> list:
     schedule: list = [[["", "", "", "", i] for i in range(8)] for _ in range(6)]
     classes_list: list = [class_and_subjects[0] for class_and_subjects in fixed_classes]
-    schedules_list: list = await afilter(Diary, school=school, week=week, clazz__in=classes_list)
+    schedules_list: tuple = await afilter(Diary, school=school, week=week, clazz__in=classes_list)
 
     if not schedules_list:
         return schedule
 
-    classes_data_list: list = await afilter(ClassData, school=school, clazz__in=classes_list)
+    classes_data_list: tuple = await afilter(ClassData, school=school, clazz__in=classes_list)
     iteration: int = 0
 
     for class_and_subjects in fixed_classes:
@@ -107,44 +105,46 @@ async def get_students_and_marks(clazz: str, school: str, date: str, subject: st
     if (not diary) or (not contains_subject_by_date(diary.schedule, subject, weekday)):
         return {}
 
-    peoples: list = await afilter(People, school=school)
-    peoples_related: list = await afilter_user_character(People, "student", school=school)
-
-    nicknames: list = [people.nickname for people in peoples]
-    marks_related: list = await afilter(Mark, nickname__in=nicknames, date=date, subject=subject)
-
-    logger.info(marks_related)
-
-    if not marks_related:
-        return {}
+    peoples_query: QuerySet = People.objects.select_related("student").filter(school=school, is_student=True,
+                                                                              student__clazz=clazz)
+    peoples: tuple = await to_async(tuple)(peoples_query)
+    marks: tuple = await afilter(Mark, nickname__in=tuple(people.nickname for people in peoples), date=date,
+                                 subject=subject)
 
     subjects_in_day: tuple = tuple(i[0] for i in diary.schedule[weekday])
     students_to_post: list = []
-    marks: list = []
-    theme: str = ""
-    weight: str = ""
+    theme, weight = get_theme_and_weight_from_marks(marks)
+    mark_counts: int = len(marks)
 
     for i in range(len(peoples)):
         people: People = peoples[i]
-        student: Student = peoples_related[i].student
-        mark: Mark = marks_related[i].mark
 
-        logger.info(i)
-        logger.info(people)
-        logger.info(student)
-        logger.info(mark)
+        # Если оценка - число, то в js, в элемент, вставляться будет 'null'
+        mark_value: str = ""
+        group: str = people.student.grouping
 
-        if incompatible_group(subject, subjects_in_day, student.grouping):
+        if incompatible_group(subject, subjects_in_day, group):
             continue
-        else:
-            students_to_post.append([people.nickname, people.name, student.grouping])
 
-        if mark:
+        if i < mark_counts:
+            mark: Mark = marks[i].mark
+            logger.info(mark)
+
             if len(theme) == 0:
                 theme = mark.theme
                 weight = mark.weight
-            marks.append(mark.value)
-        else:
-            marks.append("")
+            mark_value = str(mark.value)
 
-    return {"students": students_to_post, "marks": marks, "theme": theme, "weight": weight}
+        students_to_post.append({
+            "nickname": people.nickname,
+            "name": people.name,
+            "grouping": group,
+            "mark": mark_value
+        })
+
+    return {"students": students_to_post, "theme": theme, "weight": weight}
+
+
+async def post_marks(marks: list, date: str, theme: str, weight: str, subject: str):
+    pass
+    # for nickname, mark in marks:

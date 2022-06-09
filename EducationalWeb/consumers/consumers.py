@@ -1,5 +1,5 @@
 from .db_queries import get_student_schedule, get_schedule, save_schedule, \
-    get_teacher_schedule, post_homework, get_students_and_marks
+    get_teacher_schedule, post_homework, get_students_and_marks, post_marks
 from .server_utils import get_value_or_none, AsyncOrjsonWebsocketConsumer
 
 
@@ -43,3 +43,7 @@ class SessionConsumer(AsyncOrjsonWebsocketConsumer):
             case "get_students_and_marks":
                 await self.send_json(await get_students_and_marks(content["class"], self.school,
                                                                   content["date"], content["subject"]))
+
+            case "post_marks":
+                await post_marks(content["marks"], content["date"], content["theme"],
+                                 content["weight"], content["subject"])

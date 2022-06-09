@@ -1,4 +1,4 @@
-import {niceDate, setFuncForButton, str, success1500} from "./base.js"
+import {niceDate, setFuncForButton, str, toast} from "./base.js"
 import {setSwal} from './base_schedule.js'
 import {onError, onMessage, post} from "./common.js"
 
@@ -79,11 +79,11 @@ function addHomeworkSwal(homework, clazz, dayId, subjectId) {
         preConfirm: () => {
             const newHomework = document.getElementById("homeworkInputArea").value
             if (homework === newHomework) {
-                return success1500("Сохранено!")
+                return toast("Сохранено!")
             }
             return postHomework(clazz, newHomework, dayId, subjectId)
                 .then(() => {
-                    success1500("Сохранено!")
+                    toast("Сохранено!")
                     updateTeacherSchedule()
                 }).catch(message => Swal.showValidationMessage(message))
         },
