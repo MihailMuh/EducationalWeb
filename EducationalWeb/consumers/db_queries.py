@@ -1,8 +1,11 @@
+import logging
+
+from async_lru import alru_cache
 from django.db.models import QuerySet
 
 from .server_utils import *
 from ..models import Mark, Diary, ClassData, People
-from ..shortcuts import aget_schedule_from_db, asave, acreate, afilter, to_async
+from ..shortcuts import aget_diary_from_db, query_to_tuple
 
 logger = logging.getLogger("mihalis")
 
@@ -23,7 +26,7 @@ async def get_marks(week: str, nickname: str) -> list:
 
 
 async def get_schedule(school: str, clazz: str, week: str) -> list:
-    schedule: Diary = await aget_schedule_from_db(school, clazz, week)
+    schedule: Diary = await aget_diary_from_db(school, clazz, week)
 
     if not schedule:
         return base_student_schedule
@@ -37,31 +40,32 @@ async def get_student_schedule(week: str, nickname: str, school: str, clazz: str
     return {"schedule": schedule, "marks": marks}
 
 
-async def save_schedule(school: str, clazz: str, week: str, new_schedule: list):
-    old_schedule: Diary = await aget_schedule_from_db(school, clazz, week)
+@alru_cache(maxsize=64, typed=True)
+async def save_schedule(school: str, clazz: str, week: str, new_schedule: tuple):
+    old_schedule: Diary = await aget_diary_from_db(school, clazz, week)
 
     if old_schedule:
         old_schedule.schedule = join_schedules(old_schedule.schedule, new_schedule)
-        await asave(old_schedule)
+        await old_schedule.asave()
     else:
         new_schedule = join_schedules([[["", ""] for _ in range(8)] for _ in range(6)], new_schedule)
-        await acreate(Diary, school=school, clazz=clazz, week=week, schedule=new_schedule)
+        await Diary.objects.acreate(school=school, clazz=clazz, week=week, schedule=new_schedule)
 
 
 async def get_teacher_schedule(week: str, fixed_classes: list, school: str) -> list:
     schedule: list = [[["", "", "", "", i] for i in range(8)] for _ in range(6)]
-    classes_list: list = [class_and_subjects[0] for class_and_subjects in fixed_classes]
-    schedules_list: tuple = await afilter(Diary, school=school, week=week, clazz__in=classes_list)
+    classes_list: tuple = tuple(class_and_subjects[0] for class_and_subjects in fixed_classes)
+    schedules_list: tuple = await query_to_tuple(Diary.objects.filter(school=school, week=week, clazz__in=classes_list))
 
     if not schedules_list:
         return schedule
 
-    classes_data_list: tuple = await afilter(ClassData, school=school, clazz__in=classes_list)
+    classes_data_list: tuple = await query_to_tuple(ClassData.objects.filter(school=school, clazz__in=classes_list))
     iteration: int = 0
 
     for class_and_subjects in fixed_classes:
         clazz: str = class_and_subjects[0]
-        teacher_subjects: list = class_and_subjects[1:]
+        teacher_subjects: tuple = tuple(class_and_subjects[1:])
         classroom: str = classes_data_list[iteration].classroom
         schedule_of_class: list = schedules_list[iteration].schedule
 
@@ -89,10 +93,10 @@ async def get_teacher_schedule(week: str, fixed_classes: list, school: str) -> l
 
 
 async def post_homework(clazz: str, school: str, week: str, day_id: int, subject_id: int, homework: str):
-    diary: Diary = await aget_schedule_from_db(school, clazz, week)
+    diary: Diary = await aget_diary_from_db(school, clazz, week)
     diary.schedule[day_id][subject_id][1] = homework
 
-    await asave(diary)
+    await diary.asave()
 
 
 async def get_students_and_marks(clazz: str, school: str, date: str, subject: str):
@@ -101,15 +105,15 @@ async def get_students_and_marks(clazz: str, school: str, date: str, subject: st
     if weekday == 6:
         return {}
 
-    diary: Diary = await aget_schedule_from_db(school=school, clazz=clazz, week=calendar[0] + "-W" + calendar[1])
+    diary: Diary = await aget_diary_from_db(school=school, clazz=clazz, week=calendar[0] + "-W" + calendar[1])
     if (not diary) or (not contains_subject_by_date(diary.schedule, subject, weekday)):
         return {}
 
     peoples_query: QuerySet = People.objects.select_related("student").filter(school=school, is_student=True,
                                                                               student__clazz=clazz)
-    peoples: tuple = await to_async(tuple)(peoples_query)
-    marks: tuple = await afilter(Mark, nickname__in=tuple(people.nickname for people in peoples), date=date,
-                                 subject=subject)
+    peoples: tuple = await query_to_tuple(peoples_query)
+    marks: tuple = await Mark.objects.afilter(nickname__in=tuple(people.nickname for people in peoples), date=date,
+                                              subject=subject)
 
     subjects_in_day: tuple = tuple(i[0] for i in diary.schedule[weekday])
     students_to_post: list = []

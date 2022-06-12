@@ -8,7 +8,6 @@ from typing import Type
 from django.contrib.auth.hashers import make_password
 
 from EducationalWeb.models import *
-from EducationalWeb.shortcuts import acreate
 
 directory = Path(__file__).resolve().parent
 students_csv = os.path.join(directory, 'students.csv')
@@ -20,12 +19,15 @@ schedule_csv = os.path.join(directory, 'schedule.csv')
 async def add_people(nickname, name, password, school, is_student,
                      character="teacher", fixed_classes=None, clazz=None, grouping=None):
     if is_student:
-        return await acreate(People, nickname=nickname, name=name, password=make_password(password),
-                             school=school, is_student=True,
-                             student=(await acreate(Student, clazz=clazz, grouping=grouping)))
+        return await People.objects.acreate(nickname=nickname, name=name, password=make_password(password),
+                                            school=school, is_student=True,
+                                            student=(await Student.objects.acreate(clazz=clazz, grouping=grouping)))
 
-    await acreate(People, nickname=nickname, name=name, password=make_password(password), is_student=False,
-                  school=school, teacher=(await acreate(Teacher, character=character, fixed_classes=fixed_classes)))
+    await People.objects.acreate(nickname=nickname, name=name, password=make_password(password),
+                                 is_student=False,
+                                 school=school,
+                                 teacher=(
+                                     await Teacher.objects.acreate(character=character, fixed_classes=fixed_classes)))
 
 
 async def add_teachers():
@@ -65,9 +67,9 @@ async def add_students():
 async def add_classes():
     with open(classes_csv, encoding='utf-8') as file:
         for clazz_subjects in csv.reader(file, delimiter=";"):
-            await acreate(ClassData, clazz=clazz_subjects[0].replace("\ufeff", ""),
-                          school='МАОУ "Лицей №6"',
-                          classroom=clazz_subjects[1], subjects=clazz_subjects[2:])
+            await ClassData.objects.acreate(clazz=clazz_subjects[0].replace("\ufeff", ""),
+                                            school='МАОУ "Лицей №6"',
+                                            classroom=clazz_subjects[1], subjects=clazz_subjects[2:])
 
 
 async def add_diary():
@@ -101,7 +103,8 @@ async def add_diary():
                     if subjects_count == 6:
                         break
 
-            await acreate(Diary, clazz=classes[current_class], school='МАОУ "Лицей №6"', week=date, schedule=schedule)
+            await Diary.objects.acreate(clazz=classes[current_class], school='МАОУ "Лицей №6"', week=date,
+                                        schedule=schedule)
 
             schedule = []
             subjects_count = 0
@@ -122,21 +125,14 @@ def delete_all():
 
 
 def full_db():
-    do(add_classes)
-    print("Classes added!")
+    async def full():
+        tasks = [asyncio.create_task(add_classes()), asyncio.create_task(add_teachers()),
+                 asyncio.create_task(add_students()), asyncio.create_task(add_diary())]
 
-    do(add_teachers)
-    print("Teachers added!")
+        for task in tasks:
+            await task
 
-    do(add_students)
-    print("Students added!")
-
-    do(add_diary)
-    print("Diaries added!")
-
-
-def do(func):
-    return asyncio.run(func())
+    asyncio.run(full())
 
 # if you have empty DB: python manage.py migrate
 # then: python manage.py createsuperuser

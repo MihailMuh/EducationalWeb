@@ -1,6 +1,7 @@
 from .db_queries import get_student_schedule, get_schedule, save_schedule, \
     get_teacher_schedule, post_homework, get_students_and_marks, post_marks
-from .server_utils import get_value_or_none, AsyncOrjsonWebsocketConsumer
+from .server_utils import get_value_or_none
+from ..async_utils import AsyncOrjsonWebsocketConsumer
 
 
 class SessionConsumer(AsyncOrjsonWebsocketConsumer):
@@ -31,7 +32,8 @@ class SessionConsumer(AsyncOrjsonWebsocketConsumer):
                 await self.send_json(await get_schedule(self.school, content["class"], content["week"]))
 
             case "post_schedule":
-                await save_schedule(self.school, content["class"], content["week"], content["schedule"])
+                await self.send_json(await save_schedule(self.school, content["class"], content["week"],
+                                                         tuple(map(tuple, content["schedule"]))))
 
             case "get_teacher_schedule":
                 await self.send_json(await get_teacher_schedule(content["week"], self.fixed_classes, self.school))
@@ -45,5 +47,5 @@ class SessionConsumer(AsyncOrjsonWebsocketConsumer):
                                                                   content["date"], content["subject"]))
 
             case "post_marks":
-                await post_marks(content["marks"], content["date"], content["theme"],
-                                 content["weight"], content["subject"])
+                await self.send_json(await post_marks(content["marks"], content["date"], content["theme"],
+                                                      content["weight"], content["subject"]))

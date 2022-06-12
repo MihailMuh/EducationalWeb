@@ -1,9 +1,11 @@
 from django.contrib.postgres.fields import ArrayField
-from django.db.models import CharField, PositiveSmallIntegerField, OneToOneField, ForeignKey, CASCADE, BooleanField
+from django.db.models import CharField, PositiveSmallIntegerField, OneToOneField, CASCADE, BooleanField
 from django.db.models import Model
 
+from .async_utils import AsyncModel
 
-class ClassData(Model):
+
+class ClassData(AsyncModel):
     clazz = CharField(max_length=3, primary_key=True)
     school = CharField(max_length=100)
     classroom = CharField(max_length=10)
@@ -13,7 +15,7 @@ class ClassData(Model):
         return f"Class: {self.clazz}\nSchool: {self.school}\nClassroom: {self.classroom}\nSubjects: {self.subjects}\n"
 
 
-class Diary(Model):
+class Diary(AsyncModel):
     clazz = CharField(max_length=3)
     school = CharField(max_length=100)
     week = CharField(max_length=8)
@@ -23,7 +25,7 @@ class Diary(Model):
         return f"Class: {self.clazz}\nSchool: {self.school}\nWeek: {self.week}\nSchedule: {self.schedule}\n"
 
 
-class Mark(Model):
+class Mark(AsyncModel):
     nickname = CharField(max_length=100)
     date = CharField(max_length=20)
     weight = PositiveSmallIntegerField()
@@ -32,17 +34,17 @@ class Mark(Model):
     subject = CharField(max_length=100)
 
 
-class Student(Model):
+class Student(AsyncModel):
     clazz = CharField(max_length=3)
     grouping = CharField(max_length=50)
 
 
-class Teacher(Model):
+class Teacher(AsyncModel):
     character = CharField(max_length=7)
     fixed_classes = ArrayField(ArrayField(CharField(max_length=100)))
 
 
-class People(Model):
+class People(AsyncModel):
     nickname = CharField(max_length=100, primary_key=True)
     name = CharField(max_length=100)
     password = CharField(max_length=300)
