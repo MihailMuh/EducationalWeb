@@ -16,5 +16,5 @@ async def aget_diary_from_db(school: str, clazz: str, week: str) -> Diary | None
     return await Diary.objects.aget(school=school, clazz=clazz, week=week)
 
 
-async def query_to_tuple(query: QuerySet):
+async def query_to_tuple(query: QuerySet) -> tuple:
     return await to_async(tuple)(query)

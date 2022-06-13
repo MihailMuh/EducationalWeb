@@ -1,7 +1,6 @@
 import logging
 
 from async_lru import alru_cache
-from django.db.models import QuerySet
 
 from .server_utils import *
 from ..models import Mark, Diary, ClassData, People
@@ -13,16 +12,25 @@ logger = logging.getLogger("mihalis")
 async def get_marks(week: str, nickname: str) -> list:
     date: datetime = datetime.datetime.strptime(week + '-1', "%Y-W%W-%w")
     date_list: list = []
-    marks: list = []
+    marks_list_to_post: list = [[] for _ in range(7)]
 
     for _ in range(7):
         date_list.append(date.strftime('%Y-%m-%d'))
         date += datetime.timedelta(days=1)
-        marks.append([])
 
-    # marks_query: QuerySet = await to_async(Mark.objects.filter(nickname=nickname).filter)(date__in=date_list)
+    marks: dict = {mark.date: mark for mark in
+                   await query_to_tuple(Mark.objects.filter(nickname=nickname, date__in=date_list))}
 
-    return marks
+    for i in range(7):
+        date = date_list[i]
+
+        if marks.get(date):
+            mark: Mark = marks[date]
+            marks_list_to_post[i].append([mark.value, mark.weight, mark.theme, mark.subject])
+        else:
+            marks_list_to_post[i].append([])
+
+    return marks_list_to_post
 
 
 async def get_schedule(school: str, clazz: str, week: str) -> list:
@@ -109,19 +117,21 @@ async def get_students_and_marks(clazz: str, school: str, date: str, subject: st
     if (not diary) or (not contains_subject_by_date(diary.schedule, subject, weekday)):
         return {}
 
-    peoples_query: QuerySet = People.objects.select_related("student").filter(school=school, is_student=True,
-                                                                              student__clazz=clazz)
-    peoples: tuple = await query_to_tuple(peoples_query)
-    marks: tuple = await Mark.objects.afilter(nickname__in=tuple(people.nickname for people in peoples), date=date,
-                                              subject=subject)
+    peoples: tuple = await query_to_tuple(People.objects.
+                                          select_related("student").
+                                          filter(school=school, is_student=True, student__clazz=clazz))
+    marks: tuple = await query_to_tuple(Mark.objects.filter(
+        nickname__in=tuple(people.nickname for people in peoples), date=date,
+        subject=subject))
+    nicks_and_marks_dict: dict = {mark.nickname: mark for mark in marks}
 
     subjects_in_day: tuple = tuple(i[0] for i in diary.schedule[weekday])
     students_to_post: list = []
     theme, weight = get_theme_and_weight_from_marks(marks)
-    mark_counts: int = len(marks)
 
     for i in range(len(peoples)):
         people: People = peoples[i]
+        nickname: str = people.nickname
 
         # Если оценка - число, то в js, в элемент, вставляться будет 'null'
         mark_value: str = ""
@@ -130,17 +140,11 @@ async def get_students_and_marks(clazz: str, school: str, date: str, subject: st
         if incompatible_group(subject, subjects_in_day, group):
             continue
 
-        if i < mark_counts:
-            mark: Mark = marks[i].mark
-            logger.info(mark)
-
-            if len(theme) == 0:
-                theme = mark.theme
-                weight = mark.weight
-            mark_value = str(mark.value)
+        if nicks_and_marks_dict.get(nickname):
+            mark_value = str(nicks_and_marks_dict[nickname].value)
 
         students_to_post.append({
-            "nickname": people.nickname,
+            "nickname": nickname,
             "name": people.name,
             "grouping": group,
             "mark": mark_value
@@ -150,5 +154,30 @@ async def get_students_and_marks(clazz: str, school: str, date: str, subject: st
 
 
 async def post_marks(marks: list, date: str, theme: str, weight: str, subject: str):
-    pass
-    # for nickname, mark in marks:
+    nicknames: tuple = tuple(nick_and_mark[0] for nick_and_mark in marks)
+    marks_from_db: tuple = await query_to_tuple(Mark.objects.filter(nickname__in=nicknames,
+                                                                    date=date, subject=subject))
+    dict_marks_from_db: dict = {mark.nickname: mark for mark in marks_from_db}
+    marks_to_create: list = []
+    marks_to_update: list = []
+
+    for nickname, mark_value in marks:
+        # если оценки нет в бд
+        if not dict_marks_from_db.get(nickname):
+            if mark_value != 0:
+                marks_to_create.append(Mark(nickname=nickname, date=date, weight=weight,
+                                            theme=theme, subject=subject, value=mark_value))
+        else:
+            mark: Mark = dict_marks_from_db[nickname]
+
+            if mark_value != 0:
+                mark.value = mark_value
+                mark.theme = theme
+                mark.weight = weight
+
+                marks_to_update.append(mark)
+            else:
+                await mark.adelete()
+
+    await Mark.objects.abulk_update(marks_to_update, ["value", "theme", "weight"])
+    await Mark.objects.abulk_create(marks_to_create)

@@ -48,8 +48,11 @@ class AsyncManger(Manager):
     async def afilter(self, *args, **kwargs):
         return await to_async(self.filter)(*args, **kwargs)
 
-    async def to_tuple(self) -> tuple:
-        return await to_async(tuple)(self.query)
+    async def abulk_create(self, objects):
+        await to_async(self.bulk_create)(objs=objects)
+
+    async def abulk_update(self, objs, fields: list):
+        await to_async(self.bulk_update)(objs, fields)
 
 
 class AsyncModel(Model):
@@ -60,3 +63,6 @@ class AsyncModel(Model):
 
     async def asave(self):
         await to_async(self.save)()
+
+    async def adelete(self):
+        await to_async(self.delete)()

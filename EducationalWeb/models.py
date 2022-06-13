@@ -12,7 +12,7 @@ class ClassData(AsyncModel):
     subjects = ArrayField(CharField(max_length=100))
 
     def __str__(self):
-        return f"Class: {self.clazz}\nSchool: {self.school}\nClassroom: {self.classroom}\nSubjects: {self.subjects}\n"
+        return str({"class": self.clazz, "school": self.school, "classroom": self.classroom, "subjects": self.subjects})
 
 
 class Diary(AsyncModel):
@@ -22,7 +22,7 @@ class Diary(AsyncModel):
     schedule = ArrayField(ArrayField(ArrayField(CharField(max_length=100))))
 
     def __str__(self):
-        return f"Class: {self.clazz}\nSchool: {self.school}\nWeek: {self.week}\nSchedule: {self.schedule}\n"
+        return str({"class": self.clazz, "school": self.school, "week": self.week, "schedule": self.schedule})
 
 
 class Mark(AsyncModel):
@@ -33,15 +33,28 @@ class Mark(AsyncModel):
     theme = CharField(max_length=5000)
     subject = CharField(max_length=100)
 
+    def __str__(self):
+        return str({"nickname": self.nickname, "date": self.date, "weight": self.weight, "value": self.value,
+                    "theme": self.theme, "subject": self.subject})
+
+    class Meta:
+        ordering = ["nickname"]
+
 
 class Student(AsyncModel):
     clazz = CharField(max_length=3)
     grouping = CharField(max_length=50)
 
+    def __str__(self):
+        return str({"class": self.clazz, "grouping": self.grouping})
+
 
 class Teacher(AsyncModel):
     character = CharField(max_length=7)
     fixed_classes = ArrayField(ArrayField(CharField(max_length=100)))
+
+    def __str__(self):
+        return str({"character": self.character, "fixed_classes": self.fixed_classes})
 
 
 class People(AsyncModel):
@@ -52,3 +65,7 @@ class People(AsyncModel):
     is_student = BooleanField(default=True)
     student = OneToOneField(Student, on_delete=CASCADE, null=True)
     teacher = OneToOneField(Teacher, on_delete=CASCADE, null=True)
+
+    def __str__(self):
+        return str({"nickname": self.nickname, "name": self.name, "password": self.password, "school": self.school,
+                    "is_student": self.is_student, "student": str(self.student), "teacher": str(self.teacher)})

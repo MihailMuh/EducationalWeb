@@ -61,7 +61,7 @@ export function runScheduling() {
 
         post({
             "url": "post_schedule",
-            "schedule": tuple(schedule[0], schedule[2], schedule[4], schedule[1], schedule[3], schedule[5]),
+            "schedule": [schedule[0], schedule[2], schedule[4], schedule[1], schedule[3], schedule[5]],
             "class": classSelect.value,
             "week": weekNumber.value
         })

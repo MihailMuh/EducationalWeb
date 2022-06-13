@@ -8,6 +8,7 @@ from typing import Type
 from django.contrib.auth.hashers import make_password
 
 from EducationalWeb.models import *
+from EducationalWeb.shortcuts import query_to_tuple
 
 directory = Path(__file__).resolve().parent
 students_csv = os.path.join(directory, 'students.csv')
@@ -131,6 +132,20 @@ def full_db():
 
         for task in tasks:
             await task
+
+    asyncio.run(full())
+
+
+def print_all():
+    async def full():
+        tasks = [asyncio.create_task(query_to_tuple(ClassData.objects.all().values())),
+                 asyncio.create_task(query_to_tuple(Teacher.objects.all().values())),
+                 asyncio.create_task(query_to_tuple(Student.objects.all().values())),
+                 asyncio.create_task(query_to_tuple(Diary.objects.all().values())),
+                 asyncio.create_task(query_to_tuple(Mark.objects.all().values()))]
+
+        for task in tasks:
+            [print(i) for i in await task]
 
     asyncio.run(full())
 

@@ -1,19 +1,24 @@
 import {str, toast} from "./base.js"
 import {fixedClasses, onMessage, post} from "./common.js"
 
-function getStudentsAndMarks(i = 0) {
+function getStudentsAndMarks(i = -1) {
     const studentsAndMarks = []
 
     while (true) {
-        const markInput = document.getElementById("in" + i++)
+        i += 1
+        const markInput = document.getElementById("in" + i)
         if (!markInput) break
 
         const markValue = markInput.value
-        if (!markValue) continue
+        if (!markValue) {
+            // кладём ноль, чтобы бекенд понимал, что если у чела была пятерка, а стала ноль, значит, оценку просто убрали, и из бд её надо удалить
+            studentsAndMarks.push([studentsNicks[i], 0])
+            continue
+        }
 
         if (markValue.length > 1 || !(/[2-5]/.test(markValue))) return null
 
-        studentsAndMarks.push([studentsNicks[i], markValue])
+        studentsAndMarks.push([studentsNicks[i], Number.parseInt(markValue)])
     }
 
     return studentsAndMarks
@@ -77,6 +82,9 @@ function createStudentsTable(students) {
                                                             </td>
                                                         </tr>`)
     }
+
+    // т.к. цикл был в обратном порядке, то ники в studentsNicks тоже в обратном порядке
+    studentsNicks.reverse()
 }
 
 function removeAdditionalTeacherSubjectSelect() {
@@ -124,7 +132,6 @@ function setClassesInClassSelect() {
 
 function getStudents(clazz, date, workTheme, markWeight) {
     onMessage((json) => {
-        console.log(json)
         if (json["theme"]) {
             workTheme.value = json["theme"]
         } else {

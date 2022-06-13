@@ -2,9 +2,7 @@ import {niceDate, str} from './base.js'
 import {setSwal} from './base_schedule.js'
 import {grouping, onMessage, post} from "./common.js"
 
-function getSubject(array, mark, id) {
-    const subject = array[0]
-    const homework = array[1]
+function getSubject(subject, homework, mark, id) {
     let html = ""
     const tr = document.createElement('tr')
     tr.id = id
@@ -28,69 +26,78 @@ function getSubject(array, mark, id) {
                                                         <div class="container" style="width: 35px"><i>${mark[0]}</i></div>
                                                       </td>`)
 
-    if (subject) {
-        setSwal(tr, subject, html)
-    }
+    if (subject) setSwal(tr, subject, html)
     return tr
 }
 
-function getSubjectByGroup(subject) {
-    subject = subject.split("/")
+function getSubjectByGroup(unfilterSubject) {
+    // ['Английский язык эк. (каб. 27)', 'Химия ест.']
+    const subjects = unfilterSubject.split("/")
 
-    for (let i = 0; i < subject.length; i++) {
-        const indexGroup = subject[i].indexOf(grouping)
-        if (indexGroup !== -1) {
-            return subject[i].slice(0, indexGroup - 1)
-        }
+    for (let i = 0; i < subjects.length; i++) {
+        const subject = subjects[i]
+        const index = subject.indexOf(grouping)
+        if (index === -1) continue
+
+        // пытаемся выковорить кабинет, если он есть
+        const classroom = getClassroom(subject)
+
+        // если из index не вычитать 1, будем захватывать лишний пробел
+        return subject.slice(0, index - 1) + classroom
     }
-    return ""
 }
 
 function getClassroom(subject) {
-    const index = subject.indexOf("(")
-    if (index !== -1) {
-        return " " + subject.slice(index, subject.indexOf(")") + 1)
-    }
+    // ['Английский язык эк. ', 'каб. 27)']
+    const data = subject.split("(")
 
-    return ""
+    // после split строка не разбилась, сл-но кабинета там нет
+    if (data.length === 1) return ""
+
+    // добавляем пробел, чтобы при конкатенации с предметом строки не слиплись
+    return " (" + data[1]
+}
+
+function addBlankSubject(i, j) {
+    document.getElementById(str(i)).append(getSubject("", "", [""], str(i, j)))
 }
 
 function createSchedule(schedule, marks) {
-    for (let i = 0; i <= 5; i++) {
-        const subjects = []
-        const markData = marks[i]
-        for (let j = 0; j < markData.length; j++) {
-            subjects.push(markData[j][3])
-        }
-
-        for (let j = 0; j <= 7; j++) {
+    for (let i = 0; i < 6; i++) {
+        for (let j = 0; j < 8; j++) {
             const old = document.getElementById(str(i, j))
             if (old) {
                 old.remove()
             }
 
-            const line = schedule[i][j]
-            let subject = line[0]
+            let subject = schedule[i][j][0]
+            let homework = schedule[i][j][1]
             let mark = [""]
-            let ind = subjects.indexOf(subject)
 
+            // Проверяем есть ли строка с группой: 'Английский язык эк. (каб. 27)/Химия ест.' и выковыриваем предмет, если ученик в этой группе
             if (subject.indexOf("/") !== -1) {
-                subject = getSubjectByGroup(subject)
+                const clearSubject = getSubjectByGroup(subject)
+                subject = clearSubject
 
-                if (subject) {
-                    ind = subjects.indexOf(subject)
-                    line[0] = subject + getClassroom(subject)
-                } else {
-                    line[0] = ""
-                    line[1] = ""
+                if (!clearSubject) {
+                    addBlankSubject(i, j)
+                    continue
                 }
             }
 
-            if (ind !== -1 && subjects.length > 0) {
-                mark = [markData[ind][0], markData[ind][1], markData[ind][2]]
-                delete subjects[ind]
+            // ищем оценку для текущего предмета
+            for (let k = 0; k < marks[i].length; k++) {
+                // каждый k - примерно такой массив [2, 10, 'ЕГЭ', 'Информатика']
+                if (subject === marks[i][k][3]) {
+                    mark = marks[i][k]
+
+                    // удаляем найденный массив, т.к. больше не понадобится
+                    marks[i].splice(k, 1)
+                    break
+                }
             }
-            document.getElementById(str(i)).append(getSubject(line, mark, str(i, j)))
+
+            document.getElementById(str(i)).append(getSubject(subject, homework, mark, str(i, j)))
         }
     }
 }
