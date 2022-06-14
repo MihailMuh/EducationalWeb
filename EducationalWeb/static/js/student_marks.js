@@ -1,5 +1,6 @@
-import {arraySum, str} from './base.js'
+import {arraySum, getTodayDate, str} from './base.js'
 import {setSwal} from './base_schedule.js'
+import {onMessage, post} from "./common.js"
 
 function getMarkContainer(value, subject, theme, weight) {
     const td = document.createElement("td")
@@ -153,43 +154,42 @@ function createReport(jsonReport) {
     setMarks(jsonReport, setSubjects(table, jsonReport["subjects"]))
 }
 
-function getReport(dateStart, dateEnd, nickname, clazz, school) {
-    req.open("POST", "get_mark_report", true)
-    req.onload = function () {
-        if (req.status === 200) {
-            createReport(JSON.parse(req.responseText))
-        } else {
-            console.log(req.response)
-        }
-    }
-    req.send(JSON.stringify({
-        "nickname": nickname,
-        "class": clazz,
-        "school": school,
+function getReport(dateStart, dateEnd) {
+    onMessage((json) => createReport(json))
+    post({
+        "url": "get_mark_report",
         "start_date": dateStart,
         "end_date": dateEnd
-    }))
+    })
 }
 
-const req = new XMLHttpRequest()
-const months = {
-    "01": 'Январь', "02": 'Февраль', "03": 'Март', "04": 'Апрель', "05": 'Май',
-    "06": 'Июнь', "07": 'Июль', "08": 'Август', "09": 'Сентябрь',
-    "10": 'Октябрь', "11": 'Ноябрь', "12": 'Декабрь'
-}
-
-export function runMarks(nickname, clazz, school) {
+export function runMarks() {
     function getMarks() {
-        getReport(dateStart.value, dateEnd.value, nickname, clazz, school)
+        getReport(dateStart.value, dateEnd.value)
     }
 
     const dateStart = document.getElementById("start")
     const dateEnd = document.getElementById("end")
 
     dateStart.value = "2022-01-10"
-    dateEnd.value = "2022-05-30"
+    dateEnd.value = getTodayDate()
 
     dateStart.addEventListener("input", getMarks)
     dateEnd.addEventListener("input", getMarks)
     getMarks()
+}
+
+const months = {
+    "01": 'Январь',
+    "02": 'Февраль',
+    "03": 'Март',
+    "04": 'Апрель',
+    "05": 'Май',
+    "06": 'Июнь',
+    "07": 'Июль',
+    "08": 'Август',
+    "09": 'Сентябрь',
+    "10": 'Октябрь',
+    "11": 'Ноябрь',
+    "12": 'Декабрь'
 }

@@ -10,12 +10,18 @@ export function getWeekNumber(d) {
     return Math.ceil((((d - yearStart) / 86400000) + 1) / 7)
 }
 
-export function niceDate(d) {
+export function getFormatForBox(d) {
     let weekNo = getWeekNumber(d)
     if (weekNo < 10) {
         weekNo = str(0, weekNo)
     }
     return str(d.getFullYear(), "-W", weekNo)
+}
+
+export function getTodayDate() {
+    let yourDate = new Date()
+    yourDate = new Date(yourDate.getTime() - (yourDate.getTimezoneOffset() * 60000))
+    return yourDate.toISOString().split('T')[0]
 }
 
 export function str() {
@@ -34,8 +40,8 @@ export function arraySum(array) {
     return sum
 }
 
-export function toast(text, type='success') {
-        Swal.fire({
+export function toast(text, type = 'success') {
+    Swal.fire({
         title: text,
         icon: type,
         timer: 1500,

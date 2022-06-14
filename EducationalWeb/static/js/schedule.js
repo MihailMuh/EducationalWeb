@@ -1,4 +1,4 @@
-import {niceDate, str} from './base.js'
+import {getFormatForBox, str} from './base.js'
 import {setSwal} from './base_schedule.js'
 import {grouping, onMessage, post} from "./common.js"
 
@@ -104,7 +104,7 @@ function createSchedule(schedule, marks) {
 
 export function runSchedule() {
     const weekNumber = document.querySelector('input[type="week"]')
-    weekNumber.value = niceDate(new Date())
+    weekNumber.value = getFormatForBox(new Date())
 
     function schedule() {
         onMessage((json) => {

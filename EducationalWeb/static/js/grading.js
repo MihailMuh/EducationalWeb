@@ -1,4 +1,4 @@
-import {str, toast} from "./base.js"
+import {str, toast, getTodayDate} from "./base.js"
 import {fixedClasses, onMessage, post} from "./common.js"
 
 function getStudentsAndMarks(i = -1) {
@@ -153,12 +153,6 @@ let studentsNicks
 let currentSubject
 
 export function runGrading() {
-    function getDate() {
-        let yourDate = new Date()
-        yourDate = new Date(yourDate.getTime() - (yourDate.getTimezoneOffset() * 60000))
-        return yourDate.toISOString().split('T')[0]
-    }
-
     function students() {
         getStudents(classSelect.value, dateInput.value, workName, markWeight)
     }
@@ -181,7 +175,7 @@ export function runGrading() {
     classSelect.addEventListener("input", getNewStudentsAndSubjects)
 
     const dateInput = document.querySelector('input[type="date"]')
-    dateInput.value = getDate()
+    dateInput.value = getTodayDate()
     dateInput.addEventListener("input", students)
 
     const workName = document.querySelector('input[type="text"]')

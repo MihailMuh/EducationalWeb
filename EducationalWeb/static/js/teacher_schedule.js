@@ -1,4 +1,4 @@
-import {niceDate, setFuncForButton, str, toast} from "./base.js"
+import {getFormatForBox, setFuncForButton, str, toast} from "./base.js"
 import {setSwal} from './base_schedule.js'
 import {onError, onMessage, post} from "./common.js"
 
@@ -122,7 +122,7 @@ function updateTeacherSchedule() {
 
 export function runTeacherScheduleScript() {
     weekBox = document.querySelector('input[type="week"]')
-    weekBox.value = niceDate(new Date())
+    weekBox.value = getFormatForBox(new Date())
     weekBox.addEventListener("input", updateTeacherSchedule)
 
     updateTeacherSchedule()

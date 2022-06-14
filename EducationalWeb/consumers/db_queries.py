@@ -11,26 +11,19 @@ logger = logging.getLogger("mihalis")
 
 async def get_marks(week: str, nickname: str) -> list:
     date: datetime = datetime.datetime.strptime(week + '-1', "%Y-W%W-%w")
-    date_list: list = []
-    marks_list_to_post: list = [[] for _ in range(7)]
+    marks_list_to_post: dict = {}
 
     for _ in range(7):
-        date_list.append(date.strftime('%Y-%m-%d'))
+        marks_list_to_post[date.strftime('%Y-%m-%d')] = []
         date += datetime.timedelta(days=1)
 
-    marks: dict = {mark.date: mark for mark in
-                   await query_to_tuple(Mark.objects.filter(nickname=nickname, date__in=date_list))}
+    marks: tuple = await query_to_tuple(
+        Mark.objects.filter(nickname=nickname, date__in=tuple(marks_list_to_post.keys())))
 
-    for i in range(7):
-        date = date_list[i]
+    for mark in marks:
+        marks_list_to_post[mark.date].append([mark.value, mark.weight, mark.theme, mark.subject])
 
-        if marks.get(date):
-            mark: Mark = marks[date]
-            marks_list_to_post[i].append([mark.value, mark.weight, mark.theme, mark.subject])
-        else:
-            marks_list_to_post[i].append([])
-
-    return marks_list_to_post
+    return list(marks_list_to_post.values())
 
 
 async def get_schedule(school: str, clazz: str, week: str) -> list:
@@ -181,3 +174,28 @@ async def post_marks(marks: list, date: str, theme: str, weight: str, subject: s
 
     await Mark.objects.abulk_update(marks_to_update, ["value", "theme", "weight"])
     await Mark.objects.abulk_create(marks_to_create)
+
+
+async def get_mark_report(nickname: str, clazz: str, school: str, start_date: str, end_date: str):
+    class_data: ClassData = await ClassData.objects.aget(clazz=clazz, school=school)
+
+    # class_data.subjects примерно такой: ['Химия', 'Проект', 'Родной русский язык', '', '', '']
+    # последние пустые строки не нужны
+    subjects: tuple = tuple(subject for subject in class_data.subjects if subject)
+    start_date: datetime = strdate_to_datetime(start_date)
+    end_date: datetime = strdate_to_datetime(end_date)
+    mark_report: dict = {}
+
+    while start_date != end_date:
+        mark_report[str(start_date)] = []
+        start_date += datetime.timedelta(days=1)
+
+    marks: tuple = await query_to_tuple(Mark.objects.filter(nickname=nickname, date__in=mark_report.keys()))
+
+    for mark in marks:
+        mark_report[mark.date].append([mark.value, mark.subject, mark.weight, mark.theme])
+
+    # Будет много дат, где нет оценок. Чтобы не раздувать отчет пустыми датами, уберём их
+    mark_report = dict([(date, mark_list) for date, mark_list in mark_report.items() if mark_list])
+
+    return {"days": mark_report, "subjects": subjects}

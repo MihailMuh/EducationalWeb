@@ -4,6 +4,7 @@ import {mainPage} from "./common.js"
 import {runScheduling} from "./admin_scheduling.js"
 import {runTeacherScheduleScript} from "./teacher_schedule.js"
 import {runGrading} from "./grading.js"
+import {runMarks} from "./student_marks.js"
 
 const mainTable = document.getElementById("table")
 
@@ -59,11 +60,11 @@ function page(html, needHistory) {
     if (document.getElementById("weight")) {
         return runGrading()
     }
-    //
-    // if (document.getElementById("markTable")) {
-    //     return runMarks(nickname, clazz, school)
-    // }
-    //
+
+    if (document.getElementById("markTable")) {
+        return runMarks()
+    }
+
     if (document.getElementById("teacherTable")) {
         return runTeacherScheduleScript()
     }

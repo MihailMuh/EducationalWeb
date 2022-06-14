@@ -1,4 +1,4 @@
-import {niceDate, str, toast} from './base.js'
+import {getFormatForBox, str, toast} from './base.js'
 import {onMessage, post} from "./common.js"
 
 function getSubjectContainer(subject, id) {
@@ -36,7 +36,7 @@ export function runScheduling() {
     const inputs = document.getElementsByTagName("input")
     const classSelect = document.getElementById("class")
     const weekNumber = document.querySelector('input[type="week"]')
-    weekNumber.value = niceDate(new Date())
+    weekNumber.value = getFormatForBox(new Date())
 
     schedule()
     weekNumber.addEventListener("input", schedule)
