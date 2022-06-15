@@ -16,18 +16,15 @@ function createLessonContainer(id, clazz, subject, classroom, homework) {
                                 </td>          
                                 <td class="row" id="${str('homework', id)}">
                                     <div class="container" style="width: 200px"><i>${homework}</i></div>
-                                </td>`
+                                </td>
+                                <td class="row">`
 
     if (clazz) {
-        lessonContainer.innerHTML += `<td class="row">
-                                          <button class="button_add_task" id="${str("button", id)}"><i>Добавить дз</i></button>
-                                      </td>`
+        lessonContainer.innerHTML += `<button class="button_add_task" id="${str("button", id)}"><i>Добавить дз</i></button>`
     } else {
-        lessonContainer.innerHTML += `<td class="row">
-                                          <div class="container" style="width: 140px"></div>
-                                      </td>`
+        lessonContainer.innerHTML += `<div class="container" style="width: 140px"></div>`
     }
-    return lessonContainer
+    return lessonContainer + "</td>"
 }
 
 function setSwals(i, j, clazz, subject, classroom, homework) {

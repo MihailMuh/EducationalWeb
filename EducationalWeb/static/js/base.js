@@ -40,6 +40,8 @@ export function arraySum(array) {
     return sum
 }
 
+export const round = (number, digits) => Number(Math.round(number + "e" + digits) + "e-" + digits)
+
 export function toast(text, type = 'success') {
     Swal.fire({
         title: text,

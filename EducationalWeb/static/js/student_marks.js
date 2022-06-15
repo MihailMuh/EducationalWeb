@@ -1,4 +1,4 @@
-import {arraySum, getTodayDate, str} from './base.js'
+import {arraySum, getTodayDate, str, round} from './base.js'
 import {setSwal} from './base_schedule.js'
 import {onMessage, post} from "./common.js"
 
@@ -15,7 +15,7 @@ function getMarkContainer(value, subject, theme, weight) {
     return td
 }
 
-function addTextIntoHTML(value, text) {
+function addTextIntoHtmlOfElem(value, text) {
     addHTML(value, `<td align="center" bgcolor="#ffffff"><i>${text}</i></td>`)
 }
 
@@ -27,89 +27,85 @@ function addHTML(value, html) {
 }
 
 function getAverageScore(marks, weights) {
-    if (marks) {
-        let sum = 0
-        for (let i = 0; i < marks.length; i++) {
-            sum += marks[i] * weights[i]
-        }
-        return (sum / arraySum(weights)).toFixed(2)
+    if (!marks) return ""
+
+    let sum = 0
+    for (let i = 0; i < marks.length; i++) {
+        sum += marks[i] * weights[i]
     }
-    return ""
+    return round(sum / arraySum(weights), 3)
 }
 
-function setDays(hat, jsonReport) {
+function setDaysAndMonths(jsonReport) {
+    const hat = document.getElementById("hat")
     const tr = document.createElement("tr")
-    const json_months = {}
+    const jsonMonths = {}
     hat.after(tr)
 
     for (let date in jsonReport) {
+        // будет примерно ["2022", "06", "07"]
         date = date.split("-")
-        const month_num = date[1]
+        const monthNumber = date[1]
+        const dayNumber = date[2]
 
-        if (!json_months[month_num]) {
-            json_months[month_num] = 1
+        // считаем, сколько колонок оценок в месяце будет занято
+        if (!jsonMonths[monthNumber]) {
+            jsonMonths[monthNumber] = 1
         } else {
-            json_months[month_num] += 1
+            jsonMonths[monthNumber] += 1
         }
 
-        addHTML(tr, `<th bgcolor="#ffffff">${parseInt(date[2])}</th>`)
+        // parseInt, чтобы 07 превратить в 7
+        addHTML(tr, `<th bgcolor="#ffffff">${parseInt(dayNumber)}</th>`)
     }
 
-    for (const month in json_months) {
-        addHTML(hat, `<th colspan="${json_months[month]}" bgcolor="#ffffff"><i>${months[month]}</i></th>`)
+    // создаем элемент, растягиваем его на подсчитанное количество колонок и подписываем месяц
+    for (const month in jsonMonths) {
+        addHTML(hat, `<th colspan="${jsonMonths[month]}" bgcolor="#ffffff"><i>${months[month]}</i></th>`)
     }
     addHTML(hat, `<td rowspan="2" bgcolor="#ffffff" align="center" width="100px"><i>Ср. балл</i></td>`)
 }
 
-function setSubjects(table, arrSubjects) {
-    const subjects = {}
-    let id = 0
+function setSubjectsAndButtons(arrSubjects) {
+    const table = document.getElementById("markTable")
 
     for (let i = 0; i < arrSubjects.length; i++) {
         const subject = arrSubjects[i]
 
-        if (!subjects[subject]) {
-            addHTML(table, `<tr id="${id}">
+        addHTML(table, `<tr id="${i}">
                                     <td align="center" bgcolor="#ffffff" width="10">
-                                        <button class="button" style="width: 40px" id="${str("button-", id)}"></button>
+                                        <button class="button" style="width: 40px" id="${str("button-", i)}"></button>
                                     </td>
                                     <td bgcolor="#ffffff"><i>${subject}</i></td>
                                 </tr>`)
 
-            const subjectLine = document.getElementById(id)
-            const button = document.getElementById(str("button-", id))
-            button.onclick = function () {
-                const containers = subjectLine.querySelectorAll("td")
+        const subjectLine = document.getElementById(i)
+        const button = document.getElementById(str("button-", i))
+        button.onclick = () => {
+            const containers = subjectLine.querySelectorAll("td")
 
-                if (containers[0].style.background !== 'rgb(249, 242, 220)') {
-                    button.style.background = '#B7A295'
-                    for (let j = 0; j < containers.length; j++) {
-                        containers[j].style.background = '#F9F2DC'
-                    }
-                } else {
-                    button.style.background = '#F9F2DC'
-                    for (let j = 0; j < containers.length; j++) {
-                        containers[j].style.background = '#ffffff'
-                    }
+            if (containers[0].style.background !== 'rgb(249, 242, 220)') {
+                button.style.background = '#B7A295'
+                for (let j = 0; j < containers.length; j++) {
+                    containers[j].style.background = '#F9F2DC'
+                }
+            } else {
+                button.style.background = '#F9F2DC'
+                for (let j = 0; j < containers.length; j++) {
+                    containers[j].style.background = '#ffffff'
                 }
             }
-
-            subjects[subject] = id++
         }
     }
-
-    return subjects
 }
 
-function setMarks(jsonReport, subjects) {
-    const arr_subjects = jsonReport["subjects"]
-    const num_subjects = arr_subjects.length
-    const days = jsonReport["days"]
+function setMarks(arrSubjects, jsonDays) {
+    const numberSubjects = arrSubjects.length
     const average = {}
     const weights = {}
 
-    for (const date in days) {
-        const day = days[date]
+    for (const date in jsonDays) {
+        const day = jsonDays[date]
         let settedMarks = []
 
         for (let i = 0; i < day.length; i++) {
@@ -117,8 +113,9 @@ function setMarks(jsonReport, subjects) {
             const subject = infoAboutMark[1]
             const mark = infoAboutMark[0]
             const weight = infoAboutMark[2]
-            const id = arr_subjects.indexOf(subject)
+            const id = arrSubjects.indexOf(subject)
 
+            // создаём примерно такой элемент <td align="center" bgcolor="#ffffff"><i>5</i></td>
             document.getElementById(id).append(getMarkContainer(mark, subject, infoAboutMark[3], weight))
             settedMarks.push(id)
 
@@ -131,41 +128,38 @@ function setMarks(jsonReport, subjects) {
             }
         }
 
-        for (let i = 0; i < num_subjects; i++) {
+        // создаём пустые клетки
+        for (let i = 0; i < numberSubjects; i++) {
             if (settedMarks.indexOf(i) === -1) {
-                addTextIntoHTML(subjects[arr_subjects[i]], '')
+                addTextIntoHtmlOfElem(i, '')
             }
         }
     }
-    for (let i = 0; i < num_subjects; i++) {
-        const subject = arr_subjects[i]
-        addTextIntoHTML(subjects[subject], getAverageScore(average[subject], weights[subject]))
+
+    // подсчитываем средние баллы
+    for (let i = 0; i < numberSubjects; i++) {
+        const subject = arrSubjects[i]
+        addTextIntoHtmlOfElem(i, getAverageScore(average[subject], weights[subject]))
     }
 }
 
 function createReport(jsonReport) {
-    const table = document.getElementById("markTable")
-    table.innerHTML = `<tr id="hat">
-                            <td rowspan="2" bgcolor="#ffffff"><i>Выделить</i></td>
-                            <th rowspan="2" bgcolor="#ffffff"><i>Предмет</i></th>
-                        <tr>`
+    const days = jsonReport["days"]
+    const subjects = jsonReport["subjects"]
 
-    setDays(document.getElementById("hat"), jsonReport["days"])
-    setMarks(jsonReport, setSubjects(table, jsonReport["subjects"]))
-}
-
-function getReport(dateStart, dateEnd) {
-    onMessage((json) => createReport(json))
-    post({
-        "url": "get_mark_report",
-        "start_date": dateStart,
-        "end_date": dateEnd
-    })
+    setDaysAndMonths(days)
+    setSubjectsAndButtons(subjects)
+    setMarks(subjects, days)
 }
 
 export function runMarks() {
     function getMarks() {
-        getReport(dateStart.value, dateEnd.value)
+        onMessage((json) => createReport(json))
+        post({
+            "url": "get_mark_report",
+            "start_date": dateStart.value,
+            "end_date": dateEnd.value
+        })
     }
 
     const dateStart = document.getElementById("start")
