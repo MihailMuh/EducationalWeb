@@ -2,10 +2,7 @@ from pathlib import Path
 
 import environ
 
-env = environ.Env(
-    # default value
-    DEBUG=(bool, False)
-)
+env = environ.Env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -14,14 +11,14 @@ environ.Env.read_env(BASE_DIR / '.env')
 
 SECRET_KEY = env('SECRET_KEY')
 
-DEBUG = True
+DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = ["localhost", "78.29.33.173"]
+ALLOWED_HOSTS = ["localhost", "192.168.1.86", "78.29.33.173"]
 
 # Application definition
 
 INSTALLED_APPS = [
-    'EducationalWeb',
+    'EducationalWeb.apps.EducationalWebConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -150,10 +147,13 @@ STATIC_URL = '/static/'
 # where collectstatic will place all files
 STATIC_ROOT = BASE_DIR / 'EducationalWeb/static'
 
-# where will the files come from
+# where will the static files come from
 # STATICFILES_DIRS = [BASE_DIR / 'static']
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# установлено None, т.к. сайт сейчас не поддерживает http, поэтому браузер выдает ошибку 'The Cross-Origin-Opener-Policy header has been ignored'
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None

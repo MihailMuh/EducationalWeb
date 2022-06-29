@@ -3,6 +3,7 @@ import logging
 import orjson
 from async_lru import alru_cache
 from channels.http import AsgiRequest
+from django.conf import settings
 from django.contrib.auth.hashers import check_password
 from django.http import HttpResponse, JsonResponse, Http404
 from django.shortcuts import render
@@ -15,6 +16,17 @@ logger = logging.getLogger("django")
 
 
 async def sign(request: AsgiRequest) -> HttpResponse:
+    response: HttpResponse = render(request, "sign_in.html")
+    response.set_cookie(
+        settings.CSRF_COOKIE_NAME,
+        request.META['CSRF_COOKIE'],
+        max_age=settings.CSRF_COOKIE_AGE,
+        domain=settings.CSRF_COOKIE_DOMAIN,
+        path=settings.CSRF_COOKIE_PATH,
+        secure=settings.CSRF_COOKIE_SECURE,
+        httponly=settings.CSRF_COOKIE_HTTPONLY,
+        samesite=settings.CSRF_COOKIE_SAMESITE,
+    )
     return render(request, "sign_in.html")
 
 
@@ -47,7 +59,7 @@ async def __login(nickname: str, password: str, school: str) -> dict:
     else:
         character = people.teacher.character
         classes: list = people.teacher.fixed_classes
-        # Из-за того, что в бд хранятся списки фиксированной длины, массив с классами учителя в конце имеет несколько таких элементов: ['', '', '', '', ''], их стоит убрать
+        # Из-за того, что в бд хранятся списки фиксированной длины, массив с классами учителя в конце имеет несколько таких элементов: ['', '', '', '', ''], их надо убрать
         people_data["fixed_classes"] = classes[:classes.index(['', '', '', '', ''])]
 
     return people_data | {"character": [character, get_template(character + "_main.html")], "code": 200}
