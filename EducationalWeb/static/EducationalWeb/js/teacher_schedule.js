@@ -4,8 +4,7 @@ import {onError, onMessage, post} from "./common.js"
 
 function createLessonContainer(id, clazz, subject, classroom, homework) {
     const lessonContainer = document.createElement("tr")
-    lessonContainer.id = id
-    lessonContainer.innerHTML = `<td class="row" align="center" id="${str('class', id)}">
+    let HTML = `<td class="row" align="center" id="${str('class', id)}">
                                     <div style="width: 30px"><i>${clazz}</i></div>
                                 </td>
                                 <td class="row" align="center" id="${str('classroom', id)}">
@@ -20,16 +19,19 @@ function createLessonContainer(id, clazz, subject, classroom, homework) {
                                 <td class="row">`
 
     if (clazz) {
-        lessonContainer.innerHTML += `<button class="button_add_task" id="${str("button", id)}"><i>Добавить дз</i></button>`
+        HTML += `<button class="button_add_task" id="${str("button", id)}"><i>Добавить дз</i></button>`
     } else {
-        lessonContainer.innerHTML += `<div class="container" style="width: 140px"></div>`
+        HTML += `<div class="container" style="width: 140px"></div>`
     }
-    return lessonContainer + "</td>"
+
+    lessonContainer.innerHTML = HTML + "</td>"
+    lessonContainer.id = id
+    return lessonContainer
 }
 
 function setSwals(i, j, clazz, subject, classroom, homework) {
     const html = `</br><b>Класс: </b> ${clazz}</br>
-                      <b>Кабинет: </b> ${classroom.split(" ").pop()}</br>
+                      <b>Кабинет: </b> ${classroom.split(" ")[1]}</br>
                       <b>Задание: </b> ${homework}</br>`
     setSwal(document.getElementById(str('class', i, j)), subject, html)
     setSwal(document.getElementById(str('classroom', i, j)), subject, html)
@@ -44,19 +46,23 @@ function createSchedule(schedule) {
         const day = document.getElementById(str(i))
 
         for (let j = 0; j < 8; j++) {
+            // Будет типо этого ['8В', 'Информатика 1 гр.', 'каб. 35', 'Не задано', 5]
+            // Последняя цифра - порядковый номер урока (начинается с 0)
             const lesson = schedule[i][j]
+
             const clazz = lesson[0]
             const subject = lesson[1]
+            const classroom = lesson[2]
             const homework = lesson[3]
             const id = str(i, j)
 
-            const lessonLine = document.getElementById(str(i, j))
+            const lessonLine = document.getElementById(id)
             if (lessonLine) {
                 lessonLine.remove()
             }
 
-            day.append(createLessonContainer(id, clazz, subject, lesson[2], homework))
-            setSwals(i, j, clazz, subject, lesson[2], homework)
+            day.append(createLessonContainer(id, clazz, subject, classroom, homework))
+            setSwals(i, j, clazz, subject, classroom, homework)
         }
     }
 }
@@ -92,7 +98,6 @@ const postHomework = (clazz, homework, dayId, subjectId) => {
     return new Promise((resolve, reject) => {
         onMessage(resolve)
         onError((event) => {
-            console.log(event)
             reject("Попробуйте позже!")
         })
 

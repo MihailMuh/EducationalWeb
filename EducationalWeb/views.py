@@ -27,7 +27,7 @@ async def sign(request: AsgiRequest) -> HttpResponse:
         httponly=settings.CSRF_COOKIE_HTTPONLY,
         samesite=settings.CSRF_COOKIE_SAMESITE,
     )
-    return render(request, "sign_in.html")
+    return response
 
 
 async def diary(request: AsgiRequest) -> HttpResponse:
@@ -67,7 +67,7 @@ async def __login(nickname: str, password: str, school: str) -> dict:
 
 async def enter(request: AsgiRequest):
     json: dict = orjson.loads(request.body)
-    people_data = await __login(json["nickname"], json["password"], json["school"])
+    people_data: dict = await __login(json["nickname"], json["password"], json["school"])
 
     match people_data["code"]:
         case 405:

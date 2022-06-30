@@ -13,12 +13,12 @@ SECRET_KEY = env('SECRET_KEY')
 
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = ["localhost", "192.168.1.86", "78.29.33.173"]
+ALLOWED_HOSTS = ["localhost", "educationalweb"]
 
 # Application definition
 
 INSTALLED_APPS = [
-    'EducationalWeb.apps.EducationalWebConfig',
+    'EducationalWeb',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -153,7 +153,9 @@ STATIC_ROOT = BASE_DIR / 'EducationalWeb/static'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
-# установлено None, т.к. сайт сейчас не поддерживает http, поэтому браузер выдает ошибку 'The Cross-Origin-Opener-Policy header has been ignored'
+# установлено None, т.к. сайт сейчас не поддерживает https, поэтому браузер выдает ошибку 'The Cross-Origin-Opener-Policy header has been ignored'
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+
+CSRF_TRUSTED_ORIGINS = ["http://localhost:49145"]
