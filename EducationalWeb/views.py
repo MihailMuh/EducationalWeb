@@ -8,9 +8,8 @@ from django.contrib.auth.hashers import check_password
 from django.http import HttpResponse, JsonResponse, Http404
 from django.shortcuts import render
 
-from EducationalWeb.async_utils import to_async
 from EducationalWeb.models import People
-from EducationalWeb.shortcuts import get_template
+from EducationalWeb.shortcuts import get_template, query_to_tuple
 
 logger = logging.getLogger("django")
 
@@ -43,9 +42,9 @@ async def __login(nickname: str, password: str, school: str) -> dict:
     character: str = "student"
     people_data: dict = {"nickname": nickname, "school": school}
 
-    people: tuple = await to_async(tuple)(People.objects.
-                                          select_related("student", "teacher").
-                                          filter(nickname=nickname, school=school))
+    people: tuple = await query_to_tuple(People.objects.
+                                         select_related("student", "teacher").
+                                         filter(nickname=nickname, school=school))
 
     if not people:
         return {"code": 404}

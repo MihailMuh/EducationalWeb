@@ -2,20 +2,16 @@ from pathlib import Path
 
 import environ
 
-env = environ.Env()
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+env = environ.Env()
 environ.Env.read_env(BASE_DIR / '.env')
 
 SECRET_KEY = env('SECRET_KEY')
+DEBUG = False
 
-DEBUG = env('DEBUG')
-
-ALLOWED_HOSTS = ["localhost", "educationalweb"]
-
-# Application definition
+ALLOWED_HOSTS = ["localhost", "educationalweb", "192.168.1.94"]  # последний ip - для локальной сети (ставь свой)
+CSRF_TRUSTED_ORIGINS = ["http://localhost:49145", "http://192.168.1.94:49145"] # последний ip - для локальной сети (ставь свой)
 
 INSTALLED_APPS = [
     'EducationalWeb',
@@ -29,6 +25,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -36,9 +33,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.cache.FetchFromCacheMiddleware',
 ]
-
-ROOT_URLCONF = 'EducationalWebAdministration.urls'
 
 TEMPLATES = [
     {
@@ -56,12 +52,6 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'EducationalWebAdministration.wsgi.application'
-ASGI_APPLICATION = 'EducationalWebAdministration.asgi.application'
-
-# Database
-# https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -73,9 +63,6 @@ DATABASES = {
         'CONN_MAX_AGE': int(env('CONNECTION_TIMEOUT')),
     }
 }
-
-# Password validation
-# https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -111,7 +98,7 @@ LOGGING = {
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'level': 'INFO',
+            'level': 'DEBUG',
         },
     },
     'loggers': {
@@ -128,19 +115,38 @@ LOGGING = {
     },
 }
 
-# Internationalization
-# https://docs.djangoproject.com/en/4.0/topics/i18n/
+CACHES = {
+    'default': {
+        # To make faking cache: django.core.cache.backends.dummy.DummyCache
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': env("REDIS_HOST"),
+        'TIMEOUT': int(env("REDIS_TIMEOUT")),
+        'KEY_PREFIX': env("CACHE_PREFIX"),
+        'OPTIONS': {
+            'db': int(env("REDIS_DB")),
+            # 'PARSER_CLASS': 'redis.connection.HiredisParser',
+        },
+    }
+}
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [env("REDIS_HOST")]
+        },
+    }
+}
+
+WSGI_APPLICATION = 'EducationalWebAdministration.wsgi.application'
+ASGI_APPLICATION = 'EducationalWebAdministration.asgi.application'
+
+ROOT_URLCONF = 'EducationalWebAdministration.urls'
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = '/static/'
 
@@ -150,12 +156,12 @@ STATIC_ROOT = BASE_DIR / 'EducationalWeb/static'
 # where will the static files come from
 # STATICFILES_DIRS = [BASE_DIR / 'static']
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # установлено None, т.к. сайт сейчас не поддерживает https, поэтому браузер выдает ошибку 'The Cross-Origin-Opener-Policy header has been ignored'
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 
-CSRF_TRUSTED_ORIGINS = ["http://localhost:49145"]
+CACHE_MIDDLEWARE_ALIAS = 'default'
+CACHE_MIDDLEWARE_SECONDS = int(env("REDIS_TIMEOUT"))
+CACHE_MIDDLEWARE_KEY_PREFIX = env("CACHE_PAGE_PREFIX")
+CSRF_COOKIE_SECURE = False
