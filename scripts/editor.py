@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import asyncio
 import datetime
 
 from postgresgl import *
@@ -80,6 +81,11 @@ class DB:
                                               'МАОУ "Лицей №6"', "teachers",
                                               ("teacher", teacher_classes))
 
+    async def user1(self):
+        async with await connect() as connection:
+            async with connection.cursor() as cursor:
+                await self.__add_user(cursor, "1", "1", "1", 'МАОУ "Лицей №6"', "students", ("11А", "2"))
+
     async def __add_user(self, cursor, nick, name, password, school, database, data: tuple):
         await cursor.execute("INSERT INTO peoples VALUES (%s, %s, %s, %s, %s)",
                              (nick, name, password, school, database))
@@ -91,6 +97,7 @@ class DB:
         if len(week) == 1:
             week = "0" + week
         date = f"{date[0]}-W{week}"
+        # date = "2022-W22"
 
         async with await connect() as connection:
             async with connection.cursor() as cursor:
@@ -185,11 +192,11 @@ db = DB()
 # db.kill_all()
 
 # db = DB()
-# db.add_all()
-# asyncio.run(db.add_diary())
-# asyncio.run(db.kill_diary())
-# db.set_admin("Учитель14")
-# db.set_admin("Учитель16")
-# db.set_admin("Учитель38")
+db.add_all()
+asyncio.run(db.user1())
+asyncio.run(db.add_diary())
+db.set_admin("Учитель14")
+db.set_admin("Учитель16")
+db.set_admin("Учитель30")
 
 db.print()

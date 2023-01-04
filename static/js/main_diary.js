@@ -31,6 +31,7 @@ function newPage(html) {
     newTable.className = "table"
     newTable.innerHTML = html
     mainTable.after(newTable)
+    new ResizeObserver(() => mainTable.style.width = newTable.offsetWidth + 'px').observe(newTable)
 
     return newTable
 }

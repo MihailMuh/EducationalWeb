@@ -307,4 +307,4 @@ async def post_homework(info: Request):
 
 
 if __name__ == '__main__':
-    run("server:app", host="0.0.0.0", port=49147)
+    run("server:app", host="0.0.0.0", port=49145)
